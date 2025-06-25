@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VEXO Image Validation Client</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .upload-section {
+            margin: 20px 0;
+        }
+
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin: 10px 0;
+            transition: border-color 0.3s;
+        }
+
+        .upload-area:hover {
+            border-color: #007bff;
+        }
+
+        .upload-area.dragover {
+            border-color: #007bff;
+            background-color: #f0f8ff;
+        }
+
+        input[type="file"] {
+            margin: 10px 0;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .results {
+            margin-top: 30px;
+        }
+
+        .result-item {
+            background-color: #f8f9fa;
+            border-left: 4px solid #007bff;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+
+        .result-item.valid {
+            border-left-color: #28a745;
+            background-color: #d4edda;
+        }
+
+        .result-item.invalid {
+            border-left-color: #dc3545;
+            background-color: #f8d7da;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #007bff;
+        }
+
+        .error {
+            color: #dc3545;
+            background-color: #f8d7da;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        .image-preview {
+            max-width: 200px;
+            max-height: 200px;
+            margin: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🖼️ VEXO Image Validation</h1>
+
+        <div class="upload-section">
+            <h3>Single Image Validation</h3>
+            <div class="upload-area" id="singleUploadArea">
+                <p>Drag and drop an image here or click to browse</p>
+                <input type="file" id="singleImageInput" accept="image/*" style="display: none;">
+                <button onclick="document.getElementById('singleImageInput').click()">Choose Image</button>
+                <button onclick="validateSingleImage()" id="singleValidateBtn" disabled>Validate Image</button>
+            </div>
+        </div>
+
+        <div class="upload-section">
+            <h3>Multiple Images Validation</h3>
+            <div class="upload-area" id="multipleUploadArea">
+                <p>Drag and drop multiple images here or click to browse</p>
+                <input type="file" id="multipleImagesInput" accept="image/*" multiple style="display: none;">
+                <button onclick="document.getElementById('multipleImagesInput').click()">Choose Images</button>
+                <button onclick="validateMultipleImages()" id="multipleValidateBtn" disabled>Validate Images</button>
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <p>🔄 Processing images...</p>
+        </div>
+
+        <div class="results" id="results"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8000';
+
+        // Single image upload handlers
+        const singleImageInput = document.getElementById('singleImageInput');
+        const singleUploadArea = document.getElementById('singleUploadArea');
+        const singleValidateBtn = document.getElementById('singleValidateBtn');
+
+        // Multiple images upload handlers
+        const multipleImagesInput = document.getElementById('multipleImagesInput');
+        const multipleUploadArea = document.getElementById('multipleUploadArea');
+        const multipleValidateBtn = document.getElementById('multipleValidateBtn');
+
+        // Results and loading elements
+        const resultsDiv = document.getElementById('results');
+        const loadingDiv = document.getElementById('loading');
+
+        // Single image upload events
+        singleImageInput.addEventListener('change', function () {
+            singleValidateBtn.disabled = this.files.length === 0;
+        });
+
+        // Multiple images upload events
+        multipleImagesInput.addEventListener('change', function () {
+            multipleValidateBtn.disabled = this.files.length === 0;
+        });
+
+        // Drag and drop functionality
+        [singleUploadArea, multipleUploadArea].forEach(area => {
+            area.addEventListener('dragover', function (e) {
+                e.preventDefault();
+                this.classList.add('dragover');
+            });
+
+            area.addEventListener('dragleave', function (e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+            });
+
+            area.addEventListener('drop', function (e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+
+                const files = e.dataTransfer.files;
+                if (this === singleUploadArea && files.length > 0) {
+                    singleImageInput.files = files;
+                    singleValidateBtn.disabled = false;
+                } else if (this === multipleUploadArea && files.length > 0) {
+                    multipleImagesInput.files = files;
+                    multipleValidateBtn.disabled = false;
+                }
+            });
+        });
+
+        async function validateSingleImage() {
+            const file = singleImageInput.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            showLoading(true);
+            clearResults();
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/validate`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    displayResults([result]);
+                } else {
+                    showError(result.detail || 'Error validating image');
+                }
+            } catch (error) {
+                showError('Failed to connect to API: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function validateMultipleImages() {
+            const files = multipleImagesInput.files;
+            if (files.length === 0) return;
+
+            const formData = new FormData();
+            for (let file of files) {
+                formData.append('files', file);
+            }
+
+            showLoading(true);
+            clearResults();
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/validate_multiple`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    displayResults(result.results);
+                } else {
+                    showError(result.detail || 'Error validating images');
+                }
+            } catch (error) {
+                showError('Failed to connect to API: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function displayResults(results) {
+            resultsDiv.innerHTML = '<h3>Validation Results</h3>';
+
+            results.forEach(result => {
+                const resultDiv = document.createElement('div');
+                resultDiv.className = `result-item ${result.is_valid ? 'valid' : 'invalid'}`;
+
+                const statusIcon = result.is_valid ? '✅' : '❌';
+                const statusText = result.is_valid ? 'VALID' : 'INVALID';
+
+                resultDiv.innerHTML = `
+                    <h4>${statusIcon} ${result.filename} - ${statusText}</h4>
+                    <p><strong>Validity Score:</strong> ${result.validity_score.toFixed(4)}</p>
+                    <p><strong>Percentage:</strong> ${result.percentage.toFixed(2)}%</p>
+                    <p><strong>Message:</strong> ${result.message}</p>
+                `;
+
+                resultsDiv.appendChild(resultDiv);
+            });
+        }
+
+        function showError(message) {
+            resultsDiv.innerHTML = `
+                <div class="error">
+                    <h4>❌ Error</h4>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+
+        function showLoading(show) {
+            loadingDiv.style.display = show ? 'block' : 'none';
+        }
+
+        function clearResults() {
+            resultsDiv.innerHTML = '';
+        }
+
+        // Check API health on page load
+        window.addEventListener('load', async function () {
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`);
+                const health = await response.json();
+
+                if (!health.models_loaded) {
+                    showError('API models are not loaded. Please wait for the server to fully initialize.');
+                }
+            } catch (error) {
+                showError('Cannot connect to API server. Make sure it\'s running on http://localhost:8000');
+            }
+        });
+    </script>
+</body>
+
+</html>
