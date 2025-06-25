@@ -12,4 +12,6 @@ dependencies = [
     "python-multipart>=0.0.20",
     "tensorflow>=2.19.0",
     "uvicorn>=0.34.3",
+    "pandas>=2.0.0",
+    "openpyxl>=3.0.0",
 ]

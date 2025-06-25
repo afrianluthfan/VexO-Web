@@ -11,6 +11,12 @@ import uvicorn
 from PIL import Image
 import io
 from typing import List
+import pandas as pd
+import base64
+from fastapi.responses import StreamingResponse
+import tempfile
+import zipfile
+import json
 
 # Initialize the FastAPI app
 app = FastAPI(title="VEXO Image Validation API", version="1.0.0")
@@ -209,6 +215,154 @@ async def validate_multiple_images(files: List[UploadFile] = File(...)):
             results.append({"filename": file.filename, "error": e.detail})
 
     return JSONResponse(content={"results": results})
+
+
+@app.post("/process_excel")
+async def process_excel_file(file: UploadFile = File(...)):
+    """
+    Process Excel file with SELFIE column images
+    """
+    if not file.filename.endswith(('.xlsx', '.xls')):
+        raise HTTPException(status_code=400, detail="File must be an Excel file (.xlsx or .xls)")
+    
+    try:
+        # Read Excel file
+        contents = await file.read()
+        df = pd.read_excel(io.BytesIO(contents))
+        
+        # Validate required columns
+        required_columns = ['PROVIDER', 'NOMOR REKENING', 'NOMOR HP', 'NAMA', 'TANGGAL PEMBUKAAN', 'KTP', 'SELFIE']
+        missing_columns = [col for col in required_columns if col not in df.columns]
+        
+        if missing_columns:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Missing required columns: {', '.join(missing_columns)}"
+            )
+        
+        # Add NOTES column
+        df['NOTES'] = ''
+        
+        # Process each row's SELFIE image
+        for index, row in df.iterrows():
+            try:
+                selfie_data = row['SELFIE']
+                
+                if pd.isna(selfie_data) or selfie_data == '':
+                    df.at[index, 'NOTES'] = 'No image provided'
+                    continue
+                
+                # Assume SELFIE column contains base64 encoded images or file paths
+                # For base64 images
+                if isinstance(selfie_data, str) and selfie_data.startswith('data:image'):
+                    # Extract base64 data
+                    base64_data = selfie_data.split(',')[1] if ',' in selfie_data else selfie_data
+                    image_bytes = base64.b64decode(base64_data)
+                elif isinstance(selfie_data, str):
+                    # Treat as base64 without prefix
+                    try:
+                        image_bytes = base64.b64decode(selfie_data)
+                    except:
+                        df.at[index, 'NOTES'] = 'Invalid image format'
+                        continue
+                else:
+                    df.at[index, 'NOTES'] = 'Invalid image format'
+                    continue
+                
+                # Convert to PIL Image
+                pil_image = Image.open(io.BytesIO(image_bytes))
+                
+                # Convert to RGB if necessary
+                if pil_image.mode != "RGB":
+                    pil_image = pil_image.convert("RGB")
+                
+                # Extract features and predict
+                features = extract_features(pil_image=pil_image)
+                score = predict_image_validity(features)
+                is_valid = score >= 0.5
+                
+                # Set notes based on validation result
+                percentage = score * 100
+                if is_valid:
+                    df.at[index, 'NOTES'] = f'VALID - Score: {percentage:.1f}%'
+                else:
+                    df.at[index, 'NOTES'] = f'INVALID - Score: {percentage:.1f}%'
+                    
+            except Exception as e:
+                df.at[index, 'NOTES'] = f'Error processing image: {str(e)}'
+        
+        # Convert dataframe to Excel bytes
+        output_buffer = io.BytesIO()
+        with pd.ExcelWriter(output_buffer, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False, sheet_name='Processed Data')
+        
+        output_buffer.seek(0)
+        
+        # Return Excel file
+        return StreamingResponse(
+            io.BytesIO(output_buffer.getvalue()),
+            media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            headers={'Content-Disposition': f'attachment; filename=processed_{file.filename}'}
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error processing Excel file: {str(e)}")
+
+
+@app.post("/upload_zip")
+async def upload_zip_file(file: UploadFile = File(...)):
+    """
+    Upload and process a zip file containing images
+    """
+    if not file.filename.endswith(".zip"):
+        raise HTTPException(status_code=400, detail="File must be a zip archive")
+
+    try:
+        # Create a temporary directory
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            # Save the uploaded zip file
+            zip_path = os.path.join(tmpdirname, "uploaded.zip")
+            with open(zip_path, "wb") as zip_file:
+                zip_file.write(await file.read())
+
+            # Extract the zip file
+            with zipfile.ZipFile(zip_path, "r") as zip_ref:
+                zip_ref.extractall(tmpdirname)
+
+                # Process each extracted file
+                results = []
+                for extracted_file in os.listdir(tmpdirname):
+                    if extracted_file.endswith((".png", ".jpg", ".jpeg", ".bmp", ".gif")):
+                        file_path = os.path.join(tmpdirname, extracted_file)
+
+                        # Read and validate the image
+                        with open(file_path, "rb") as img_file:
+                            contents = img_file.read()
+                            pil_image = Image.open(io.BytesIO(contents))
+
+                            # Extract features
+                            features = extract_features(pil_image=pil_image)
+
+                            # Get prediction score
+                            score = predict_image_validity(features)
+
+                            # Determine validity
+                            is_valid = score >= 0.5
+
+                            results.append(
+                                {
+                                    "filename": extracted_file,
+                                    "validity_score": score,
+                                    "percentage": score * 100,
+                                    "is_valid": is_valid,
+                                    "message": "Image is valid" if is_valid else "Image is not valid",
+                                }
+                            )
+
+                return JSONResponse(content={"results": results})
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error processing zip file: {str(e)}")
 
 
 if __name__ == "__main__":
