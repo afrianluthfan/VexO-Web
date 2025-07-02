@@ -43,10 +43,7 @@ VEXO Image Validation API is a production-ready REST service that leverages mach
 - 🚀 **High Performance** - Async processing with FastAPI
 - 🎯 **Accurate Validation** - Pre-trained Xception + custom classification model
 - 📁 **Batch Processing** - Validate up to 10 images simultaneously
-- � **Google Drive Integration** - Process images directly from Google Drive URLs
-- 📊 **Excel Processing** - Bulk validate images from Excel files
-- 🗜️ **ZIP File Support** - Process multiple images from ZIP archives
-- �🔧 **Developer Friendly** - Interactive API documentation with Swagger UI
+- 🔧 **Developer Friendly** - Interactive API documentation with Swagger UI
 - 🌐 **CORS Enabled** - Ready for web applications
 - 📊 **Health Monitoring** - Built-in health check endpoints
 - 🛡️ **Type Safety** - Full TypeScript-style type hints
@@ -83,10 +80,9 @@ Your API will be available at:
 
 ### Prerequisites
 
-- **Python 3.12+**
+- **Python 3.8+** (3.12+ recommended)
 - **UV package manager** (recommended) or pip
 - **Model file:** `vexo_v4.keras` (required)
-- **Google Cloud Project** (optional, for Google Drive integration)
 
 ### Step-by-Step Installation
 
@@ -100,27 +96,19 @@ Your API will be available at:
 2. **Install all dependencies:**
 
    ```bash
-   # Install all dependencies including Google Drive support
-   pip install -r requirements.txt
-
-   # Or install with UV
-   uv add fastapi uvicorn python-multipart pillow opencv-python tensorflow keras numpy pandas openpyxl google-api-python-client google-auth google-auth-oauthlib google-auth-httplib2
+   uv add fastapi uvicorn python-multipart pillow opencv-python tensorflow keras numpy
    ```
 
-3. **Set up Google Drive integration (optional):**
-
-   Follow the detailed setup guide in [`GOOGLE_DRIVE_SETUP.md`](GOOGLE_DRIVE_SETUP.md)
-
-4. **Verify model file exists:**
+3. **Verify model file exists:**
 
    ```bash
-   # Ensure vexo_v4_2.keras is in the project root
-   ls vexo_v4_2.keras
+   # Ensure vexo_v4.keras is in the project root
+   ls vexo_v4.keras
    ```
 
-5. **Start the server:**
+4. **Start the server:**
    ```bash
-   python main.py
+   uv run python main.py
    ```
 
 ---
@@ -135,16 +123,12 @@ http://localhost:8000
 
 ### Endpoints
 
-| Method | Endpoint                          | Description                   | Parameters             |
-| ------ | --------------------------------- | ----------------------------- | ---------------------- |
-| `GET`  | `/`                               | API information               | None                   |
-| `GET`  | `/health`                         | Health status check           | None                   |
-| `POST` | `/validate`                       | Single image validation       | `file: image`          |
-| `POST` | `/validate_multiple`              | Batch validation (max 10)     | `files: image[]`       |
-| `POST` | `/validate_google_drive`          | Google Drive image validation | `drive_url: string`    |
-| `POST` | `/validate_google_drive_multiple` | Multiple Google Drive images  | `drive_urls: string[]` |
-| `POST` | `/process_excel`                  | Excel file with images        | `file: xlsx/xls`       |
-| `POST` | `/upload_zip`                     | ZIP file with images          | `file: zip`            |
+| Method | Endpoint             | Description               | Parameters       |
+| ------ | -------------------- | ------------------------- | ---------------- |
+| `GET`  | `/`                  | API information           | None             |
+| `GET`  | `/health`            | Health status check       | None             |
+| `POST` | `/validate`          | Single image validation   | `file: image`    |
+| `POST` | `/validate_multiple` | Batch validation (max 10) | `files: image[]` |
 
 ### Response Format
 
@@ -173,20 +157,6 @@ http://localhost:8000
       "message": "Image is valid"
     }
   ]
-}
-```
-
-#### Google Drive Response
-
-```json
-{
-  "filename": "drive_image.jpg",
-  "file_id": "1fVFzaykARNfmK0oIKV-Sarb111i4HGYu",
-  "drive_url": "https://drive.google.com/file/d/1fVFzaykARNfmK0oIKV-Sarb111i4HGYu/view",
-  "validity_score": 0.85,
-  "percentage": 85.0,
-  "is_valid": true,
-  "message": "Image is valid"
 }
 ```
 
@@ -222,30 +192,12 @@ curl -X POST \
   http://localhost:8000/validate_multiple
 ```
 
-**Google Drive Image:**
-
-```bash
-curl -X POST \
-  -H "Content-Type: application/json" \
-  -d '{"drive_url": "https://drive.google.com/file/d/1fVFzaykARNfmK0oIKV-Sarb111i4HGYu/view"}' \
-  http://localhost:8000/validate_google_drive
-```
-
-**Multiple Google Drive Images:**
-
-```bash
-curl -X POST \
-  -H "Content-Type: application/json" \
-  -d '{"drive_urls": ["https://drive.google.com/file/d/FILE_ID_1/view", "https://drive.google.com/file/d/FILE_ID_2/view"]}' \
-  http://localhost:8000/validate_google_drive_multiple
-```
-
 ### Using Python Requests
 
 ```python
 import requests
 
-# Single image upload
+# Single image
 with open('image.jpg', 'rb') as f:
     response = requests.post(
         'http://localhost:8000/validate',
@@ -253,26 +205,6 @@ with open('image.jpg', 'rb') as f:
     )
     result = response.json()
     print(f"Valid: {result['is_valid']}, Score: {result['percentage']:.1f}%")
-
-# Google Drive image validation
-response = requests.post(
-    'http://localhost:8000/validate_google_drive',
-    json={'drive_url': 'https://drive.google.com/file/d/1fVFzaykARNfmK0oIKV-Sarb111i4HGYu/view'}
-)
-result = response.json()
-print(f"Drive Image - Valid: {result['is_valid']}, Score: {result['percentage']:.1f}%")
-
-# Multiple Google Drive images
-response = requests.post(
-    'http://localhost:8000/validate_google_drive_multiple',
-    json={'drive_urls': [
-        'https://drive.google.com/file/d/FILE_ID_1/view',
-        'https://drive.google.com/file/d/FILE_ID_2/view'
-    ]}
-)
-results = response.json()
-for i, result in enumerate(results['results']):
-    print(f"Image {i+1}: Valid: {result['is_valid']}, Score: {result['percentage']:.1f}%")
 ```
 
 ### Using JavaScript/Fetch

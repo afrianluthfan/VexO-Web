@@ -1,6 +1,32 @@
 # 🖼️ VEXO Frontend - Image Validation UI
 
-A modern Next.js frontend for the VEXO Image Validation API with Google Drive integration.
+> A modern Next.js frontend for the VEXO Image Validation API with Google Drive integration.
+
+[![Frontend Status](https://img.shields.io/badge/Frontend-Live-brightgreen)]()
+[![Next.js](https://img.shields.io/badge/Next.js-14+-black)]()
+[![React](https://img.shields.io/badge/React-18+-61DAFB)]()
+[![TypeScript](https://img.shields.io/badge/TypeScript-Latest-3178C6)]()
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-Latest-38B2AC)]()
+
+---
+
+## 📋 Table of Contents
+
+- [Features](#-features)
+- [Getting Started](#-getting-started)
+- [Configuration](#-configuration)
+- [Usage](#-usage)
+- [Google Drive Setup](#-google-drive-setup)
+- [UI Components](#-ui-components)
+- [Responsive Design](#-responsive-design)
+- [Error Handling](#-error-handling)
+- [Troubleshooting](#-troubleshooting)
+- [API Endpoints](#-api-endpoints-used)
+- [Development](#-development)
+- [Learn More](#learn-more)
+- [Deploy](#deploy-on-vercel)
+
+---
 
 ## ✨ Features
 
@@ -11,32 +37,75 @@ A modern Next.js frontend for the VEXO Image Validation API with Google Drive in
 - ⚡ **Real-time Processing**: Live progress indicators and results display
 - 🎯 **Multiple Validation Modes**: Single, multiple, and batch processing
 
+---
+
 ## 🚀 Getting Started
 
-### Prerequisites
-
-- Node.js 18+
-- VEXO Backend API running on `http://localhost:8000`
-
-### Installation
+Get the frontend running in under 2 minutes:
 
 ```bash
+# Clone the repository (if not already done)
+cd frontend
+
 # Install dependencies
-npm install
-# or
 pnpm install
 
-# Start development server
-npm run dev
-# or
+# Start the development server
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to view the application.
+Your frontend will be available at:
+
+- **Frontend URL:** `http://localhost:3000`
+- **Backend API:** `http://localhost:8000` (required)
+
+---
+
+## 📦 Installation
+
+### Prerequisites
+
+- **Node.js 18+**
+- **PNPM package manager** (recommended) or npm
+- **VEXO Backend API** running on `http://localhost:8000`
+
+### Step-by-Step Installation
+
+1. **Navigate to frontend directory:**
+
+   ```bash
+   cd d:/codes/vexo/frontend
+   ```
+
+2. **Install dependencies:**
+
+   ```bash
+   # Install all dependencies
+   pnpm install
+
+   # Or with npm
+   npm install
+   ```
+
+3. **Start development server:**
+
+   ```bash
+   pnpm dev
+   # or
+   npm run dev
+   ```
+
+4. **Open the application:**
+
+   Navigate to `http://localhost:3000` in your browser
+
+---
 
 ## 🔧 Configuration
 
 The frontend automatically connects to the backend API at `http://localhost:8000`.
+
+### Custom Backend URL
 
 If your backend is running on a different port, update the `API_BASE_URL` in `app/page.tsx`:
 
@@ -44,7 +113,17 @@ If your backend is running on a different port, update the `API_BASE_URL` in `ap
 const API_BASE_URL = "http://localhost:YOUR_PORT";
 ```
 
-## 📋 Usage
+### Environment Variables
+
+You can also use environment variables by creating a `.env.local` file:
+
+```env
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+```
+
+---
+
+## � Usage
 
 ### 1. **File Upload Validation**
 
@@ -152,50 +231,184 @@ frontend/
 │   └── globals.css       # Global styles
 ├── components/
 │   └── ui/              # Reusable UI components
+│       ├── button.tsx   # Button component
+│       ├── card.tsx     # Card component
+│       ├── input.tsx    # Input component
+│       └── progress.tsx # Progress indicator
 └── lib/
     └── utils.ts         # Utility functions
 ```
 
+### Development Commands
+
+```bash
+# Start development server
+pnpm dev
+
+# Build for production
+pnpm build
+
+# Start production server
+pnpm start
+
+# Run linting
+pnpm lint
+
+# Type checking
+pnpm type-check
+```
+
 ### Adding New Features
 
-1. Create new components in `components/`
-2. Add API calls to `app/page.tsx`
-3. Update UI state management
-4. Add error handling
+1. **Create new components** in `components/ui/`
+2. **Add API calls** to `app/page.tsx`
+3. **Update UI state management** with React hooks
+4. **Add error handling** for new features
+5. **Test responsiveness** across devices
+
+---
+
+## 🤝 Contributing
+
+### Development Setup
+
+```bash
+# Fork and clone the repository
+git clone https://github.com/your-username/vexo.git
+cd vexo/frontend
+
+# Install dependencies
+pnpm install
+
+# Start development server
+pnpm dev
+
+# Run linting and type checking
+pnpm lint && pnpm type-check
+```
+
+### Contribution Guidelines
+
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
+4. **Push** to the branch (`git push origin feature/amazing-feature`)
+5. **Open** a Pull Request
+
+---
+
+## 📞 Support
+
+### Getting Help
+
+- 📖 **Documentation:** Check the component documentation
+- 🐛 **Bug Reports:** [Open an issue](https://github.com/your-repo/issues)
+- 💬 **Questions:** [Start a discussion](https://github.com/your-repo/discussions)
+- 📧 **Email:** support@yourcompany.com
+
+### Common Issues
+
+<details>
+<summary><strong>API Connection Failed</strong></summary>
+
+```
+Error: Failed to fetch from API
+```
+
+**Solution:**
+
+- Ensure backend is running on `http://localhost:8000`
+- Check CORS settings in backend
+- Verify health endpoint: `http://localhost:8000/health`
+
+</details>
+
+<details>
+<summary><strong>Google Drive URLs Not Working</strong></summary>
+
+```
+Error: Invalid Google Drive URL format
+```
+
+**Solution:**
+
+- Use proper Google Drive sharing URLs
+- Ensure backend Google Drive authentication is set up
+- Check file permissions in Google Drive
+
+</details>
+
+<details>
+<summary><strong>File Upload Issues</strong></summary>
+
+```
+Error: Unsupported file format
+```
+
+**Solution:**
+
+- Check supported file formats (JPEG, PNG, etc.)
+- Ensure files are valid images
+- Check file size limits
+
+</details>
+
+---
+
+## 🌟 Next.js Information
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Getting Started
+### Built With
 
-First, run the development server:
+- **Next.js 14+** - React framework for production
+- **TypeScript** - Type-safe JavaScript
+- **Tailwind CSS** - Utility-first CSS framework
+- **shadcn/ui** - High-quality React components
+- **Lucide Icons** - Beautiful SVG icons
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
+### Learn More
 
 To learn more about Next.js, take a look at the following resources:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial
+- [Next.js GitHub repository](https://github.com/vercel/next.js) - feedback and contributions welcome
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 🚀 Deploy on Vercel
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Deployment Steps
+
+1. **Connect your repository** to Vercel
+2. **Set environment variables** if needed
+3. **Configure build settings** (automatic for Next.js)
+4. **Deploy** with one click
+
+Check out the [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- **Next.js Team** for the excellent React framework
+- **Vercel** for the deployment platform
+- **shadcn** for the beautiful UI components
+- **Tailwind CSS** for the utility-first styling
+- **Contributors** who helped improve this project
+
+---
+
+<div align="center">
+  <h3>⭐ Star this repo if you find it helpful!</h3>
+  <p>Built with ❤️ for the developer community</p>
+</div>
