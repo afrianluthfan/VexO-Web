@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
 import {
   Upload,
   ImageIcon,
@@ -25,6 +26,9 @@ import {
   Sparkles,
   FileSpreadsheet,
   Download,
+  Link2,
+  Plus,
+  Minus,
 } from "lucide-react";
 
 interface ValidationResult {
@@ -33,6 +37,13 @@ interface ValidationResult {
   validity_score: number;
   percentage: number;
   message: string;
+  file_id?: string;
+  drive_url?: string;
+}
+
+interface GoogleDriveResult extends ValidationResult {
+  file_id: string;
+  drive_url: string;
 }
 
 export default function Home() {
@@ -48,6 +59,14 @@ export default function Home() {
   const [processedExcelUrl, setProcessedExcelUrl] = useState<string | null>(
     null
   );
+
+  // Google Drive states
+  const [googleDriveUrl, setGoogleDriveUrl] = useState<string>("");
+  const [googleDriveUrls, setGoogleDriveUrls] = useState<string[]>([""]);
+  const [googleDriveLoading, setGoogleDriveLoading] = useState(false);
+  const [googleDriveResults, setGoogleDriveResults] = useState<
+    GoogleDriveResult[]
+  >([]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const excelInputRef = useRef<HTMLInputElement>(null);
@@ -222,6 +241,88 @@ export default function Home() {
       link.click();
       document.body.removeChild(link);
     }
+  };
+
+  // Google Drive validation functions
+  const validateGoogleDriveImage = async () => {
+    if (!googleDriveUrl.trim()) return;
+
+    setGoogleDriveLoading(true);
+    setGoogleDriveResults([]);
+    setError(null);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/validate_google_drive`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ drive_url: googleDriveUrl.trim() }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setGoogleDriveResults([result]);
+      } else {
+        setError(result.detail || "Error validating Google Drive image");
+      }
+    } catch (error) {
+      setError("Failed to connect to API: " + (error as Error).message);
+    } finally {
+      setGoogleDriveLoading(false);
+    }
+  };
+
+  const validateMultipleGoogleDriveImages = async () => {
+    const validUrls = googleDriveUrls.filter((url) => url.trim());
+    if (validUrls.length === 0) return;
+
+    setGoogleDriveLoading(true);
+    setGoogleDriveResults([]);
+    setError(null);
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/validate_google_drive_multiple`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ drive_urls: validUrls }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setGoogleDriveResults(result.results);
+      } else {
+        setError(result.detail || "Error validating Google Drive images");
+      }
+    } catch (error) {
+      setError("Failed to connect to API: " + (error as Error).message);
+    } finally {
+      setGoogleDriveLoading(false);
+    }
+  };
+
+  const addGoogleDriveUrl = () => {
+    setGoogleDriveUrls([...googleDriveUrls, ""]);
+  };
+
+  const removeGoogleDriveUrl = (index: number) => {
+    if (googleDriveUrls.length > 1) {
+      const newUrls = googleDriveUrls.filter((_, i) => i !== index);
+      setGoogleDriveUrls(newUrls);
+    }
+  };
+
+  const updateGoogleDriveUrl = (index: number, value: string) => {
+    const newUrls = [...googleDriveUrls];
+    newUrls[index] = value;
+    setGoogleDriveUrls(newUrls);
   };
 
   return (
@@ -471,7 +572,142 @@ export default function Home() {
               </CardContent>
             </Card>
           </div>
+          <div>
+            {/* Google Drive Section */}
+            <Card className="mb-8 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Link2 className="h-5 w-5" />
+                  Google Drive Image Validation
+                </CardTitle>
+                <CardDescription>
+                  Validate images directly from Google Drive. Paste a Google
+                  Drive sharing link to validate single or multiple images
+                  without downloading them.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {/* Single Google Drive URL */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      Single Google Drive Image URL
+                    </label>
+                    <div className="flex gap-2">
+                      <Input
+                        type="url"
+                        value={googleDriveUrl}
+                        onChange={(e) => setGoogleDriveUrl(e.target.value)}
+                        placeholder="https://drive.google.com/file/d/FILE_ID/view?usp=sharing"
+                        className="flex-1"
+                      />
+                      <Button
+                        onClick={validateGoogleDriveImage}
+                        disabled={!googleDriveUrl.trim() || googleDriveLoading}
+                        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                      >
+                        {googleDriveLoading ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Validating...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="h-4 w-4 mr-2" />
+                            Validate
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
 
+                  <Separator />
+
+                  {/* Multiple Google Drive URLs */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-medium text-gray-700">
+                        Multiple Google Drive Image URLs
+                      </label>
+                      <Button
+                        onClick={addGoogleDriveUrl}
+                        size="sm"
+                        variant="outline"
+                        className="text-xs"
+                      >
+                        <Plus className="h-3 w-3 mr-1" />
+                        Add URL
+                      </Button>
+                    </div>
+
+                    <div className="space-y-2 max-h-60 overflow-y-auto">
+                      {googleDriveUrls.map((url, index) => (
+                        <div key={index} className="flex gap-2">
+                          <Input
+                            type="url"
+                            value={url}
+                            onChange={(e) =>
+                              updateGoogleDriveUrl(index, e.target.value)
+                            }
+                            placeholder={`Google Drive URL ${index + 1}`}
+                            className="flex-1"
+                          />
+                          {googleDriveUrls.length > 1 && (
+                            <Button
+                              onClick={() => removeGoogleDriveUrl(index)}
+                              size="sm"
+                              variant="outline"
+                              className="px-2"
+                            >
+                              <Minus className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    <Button
+                      onClick={validateMultipleGoogleDriveImages}
+                      disabled={
+                        googleDriveUrls.filter((url) => url.trim()).length ===
+                          0 || googleDriveLoading
+                      }
+                      className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                    >
+                      {googleDriveLoading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Validating Multiple...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-4 w-4 mr-2" />
+                          Validate All URLs
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  {/* Google Drive Setup Instructions */}
+                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5" />
+                      <div className="text-sm">
+                        <p className="font-medium text-amber-900">
+                          Setup Required
+                        </p>
+                        <p className="text-amber-700 mt-1">
+                          Google Drive integration requires API authentication.
+                          Make sure your backend is configured with Google Drive
+                          credentials.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
           <div>
             {/* Loading Progress for Excel */}
             {excelProcessing && (
@@ -506,6 +742,24 @@ export default function Home() {
               <Progress value={33} className="h-2" />
               <p className="text-sm text-blue-700 mt-2">
                 AI models are analyzing your images for quality and validity.
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Google Drive Loading Progress */}
+        {googleDriveLoading && (
+          <Card className="mb-8 border-purple-200 bg-purple-50/50">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3 mb-3">
+                <Loader2 className="h-5 w-5 text-purple-600 animate-spin" />
+                <span className="font-medium text-purple-900">
+                  Processing Google Drive images...
+                </span>
+              </div>
+              <Progress value={45} className="h-2" />
+              <p className="text-sm text-purple-700 mt-2">
+                Downloading and analyzing images from Google Drive.
               </p>
             </CardContent>
           </Card>
@@ -583,6 +837,98 @@ export default function Home() {
                       </CardContent>
                     </Card>
                     {index < results.length - 1 && (
+                      <Separator className="my-4" />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Google Drive Results */}
+        {googleDriveResults.length > 0 && (
+          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm mt-8">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Link2 className="h-5 w-5 text-blue-600" />
+                Google Drive Validation Results
+              </CardTitle>
+              <CardDescription>
+                {googleDriveResults.length} Google Drive image
+                {googleDriveResults.length > 1 ? "s" : ""} processed
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {googleDriveResults.map((result, index) => (
+                  <div key={index}>
+                    <Card
+                      className={`transition-all duration-300 ${
+                        result.is_valid
+                          ? "border-green-200 bg-green-50/50 hover:bg-green-50"
+                          : "border-red-200 bg-red-50/50 hover:bg-red-50"
+                      }`}
+                    >
+                      <CardContent className="pt-6">
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-center gap-3">
+                            {result.is_valid ? (
+                              <CheckCircle2 className="h-6 w-6 text-green-600" />
+                            ) : (
+                              <XCircle className="h-6 w-6 text-red-600" />
+                            )}
+                            <div>
+                              <h3 className="font-semibold text-lg">
+                                {result.filename}
+                              </h3>
+                              <div className="flex gap-2 mt-1">
+                                <Badge
+                                  variant={
+                                    result.is_valid ? "default" : "destructive"
+                                  }
+                                >
+                                  {result.is_valid ? "VALID" : "INVALID"}
+                                </Badge>
+                                <Badge variant="outline" className="text-xs">
+                                  Google Drive
+                                </Badge>
+                              </div>
+                              {result.drive_url && (
+                                <a
+                                  href={result.drive_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs text-blue-600 hover:text-blue-800 underline mt-1 block"
+                                >
+                                  View in Google Drive
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold">
+                              {result.percentage.toFixed(1)}%
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              Score: {result.validity_score.toFixed(4)}
+                            </div>
+                            {result.file_id && (
+                              <div className="text-xs text-muted-foreground mt-1">
+                                ID: {result.file_id.substring(0, 8)}...
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <Progress value={result.percentage} className="mb-3" />
+
+                        <p className="text-sm text-muted-foreground bg-background/50 p-3 rounded-md">
+                          {result.message}
+                        </p>
+                      </CardContent>
+                    </Card>
+                    {index < googleDriveResults.length - 1 && (
                       <Separator className="my-4" />
                     )}
                   </div>

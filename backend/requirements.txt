@@ -16,5 +16,11 @@ pillow>=11.2.1
 pandas>=2.0.0
 openpyxl>=3.0.0
 
+# Google Drive API dependencies
+google-api-python-client>=2.0.0
+google-auth>=2.0.0
+google-auth-oauthlib>=1.0.0
+google-auth-httplib2>=0.2.0
+
 # Additional utility dependencies
 typing-extensions>=4.0.0

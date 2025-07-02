@@ -16,7 +16,10 @@ import base64
 from fastapi.responses import StreamingResponse
 import tempfile
 import zipfile
-import json
+from pydantic import BaseModel
+
+# Import Google Drive authentication module
+from google_drive_auth import initialize_google_drive_auth, process_google_drive_image
 
 # Initialize the FastAPI app
 app = FastAPI(title="VEXO Image Validation API", version="1.0.0")
@@ -34,6 +37,15 @@ app.add_middleware(
 xception_model = None
 classification_model = None
 model_path = "vexo_v4_2.keras"
+
+
+# Pydantic models
+class GoogleDriveRequest(BaseModel):
+    drive_url: str
+
+
+class GoogleDriveMultipleRequest(BaseModel):
+    drive_urls: List[str]
 
 
 def initialize_models():
@@ -149,8 +161,21 @@ async def process_uploaded_image(file: UploadFile):
 # API Endpoints
 @app.on_event("startup")
 async def startup_event():
-    """Initialize models when the API starts"""
+    """Initialize models and Google Drive authentication when the API starts"""
     initialize_models()
+
+    # Initialize Google Drive authentication (optional - will work without it)
+    try:
+        print("Initializing Google Drive authentication...")
+        if initialize_google_drive_auth():
+            print("Google Drive authentication successful!")
+        else:
+            print(
+                "Google Drive authentication failed - Google Drive features will be unavailable"
+            )
+    except Exception as e:
+        print(f"Google Drive authentication error: {e}")
+        print("Google Drive features will be unavailable")
 
 
 @app.get("/")
@@ -162,6 +187,10 @@ async def root():
         "endpoints": {
             "POST /validate": "Upload a single image for validation",
             "POST /validate_multiple": "Upload multiple images for validation",
+            "POST /validate_google_drive": "Validate image from Google Drive URL",
+            "POST /validate_google_drive_multiple": "Validate multiple images from Google Drive URLs",
+            "POST /process_excel": "Process Excel file with image validation",
+            "POST /upload_zip": "Upload and process zip file with images",
             "GET /health": "Health check endpoint",
         },
     }
@@ -222,91 +251,109 @@ async def process_excel_file(file: UploadFile = File(...)):
     """
     Process Excel file with SELFIE column images
     """
-    if not file.filename.endswith(('.xlsx', '.xls')):
-        raise HTTPException(status_code=400, detail="File must be an Excel file (.xlsx or .xls)")
-    
+    if not file.filename.endswith((".xlsx", ".xls")):
+        raise HTTPException(
+            status_code=400, detail="File must be an Excel file (.xlsx or .xls)"
+        )
+
     try:
         # Read Excel file
         contents = await file.read()
         df = pd.read_excel(io.BytesIO(contents))
-        
+
         # Validate required columns
-        required_columns = ['PROVIDER', 'NOMOR REKENING', 'NOMOR HP', 'NAMA', 'TANGGAL PEMBUKAAN', 'KTP', 'SELFIE']
+        required_columns = [
+            "PROVIDER",
+            "NOMOR REKENING",
+            "NOMOR HP",
+            "NAMA",
+            "TANGGAL PEMBUKAAN",
+            "KTP",
+            "SELFIE",
+        ]
         missing_columns = [col for col in required_columns if col not in df.columns]
-        
+
         if missing_columns:
             raise HTTPException(
-                status_code=400, 
-                detail=f"Missing required columns: {', '.join(missing_columns)}"
+                status_code=400,
+                detail=f"Missing required columns: {', '.join(missing_columns)}",
             )
-        
+
         # Add NOTES column
-        df['NOTES'] = ''
-        
+        df["NOTES"] = ""
+
         # Process each row's SELFIE image
         for index, row in df.iterrows():
             try:
-                selfie_data = row['SELFIE']
-                
-                if pd.isna(selfie_data) or selfie_data == '':
-                    df.at[index, 'NOTES'] = 'No image provided'
+                selfie_data = row["SELFIE"]
+
+                if pd.isna(selfie_data) or selfie_data == "":
+                    df.at[index, "NOTES"] = "No image provided"
                     continue
-                
+
                 # Assume SELFIE column contains base64 encoded images or file paths
                 # For base64 images
-                if isinstance(selfie_data, str) and selfie_data.startswith('data:image'):
+                if isinstance(selfie_data, str) and selfie_data.startswith(
+                    "data:image"
+                ):
                     # Extract base64 data
-                    base64_data = selfie_data.split(',')[1] if ',' in selfie_data else selfie_data
+                    base64_data = (
+                        selfie_data.split(",")[1] if "," in selfie_data else selfie_data
+                    )
                     image_bytes = base64.b64decode(base64_data)
                 elif isinstance(selfie_data, str):
                     # Treat as base64 without prefix
                     try:
                         image_bytes = base64.b64decode(selfie_data)
                     except:
-                        df.at[index, 'NOTES'] = 'Invalid image format'
+                        df.at[index, "NOTES"] = "Invalid image format"
                         continue
                 else:
-                    df.at[index, 'NOTES'] = 'Invalid image format'
+                    df.at[index, "NOTES"] = "Invalid image format"
                     continue
-                
+
                 # Convert to PIL Image
                 pil_image = Image.open(io.BytesIO(image_bytes))
-                
+
                 # Convert to RGB if necessary
                 if pil_image.mode != "RGB":
                     pil_image = pil_image.convert("RGB")
-                
+
                 # Extract features and predict
                 features = extract_features(pil_image=pil_image)
                 score = predict_image_validity(features)
                 is_valid = score >= 0.5
-                
+
                 # Set notes based on validation result
                 percentage = score * 100
                 if is_valid:
-                    df.at[index, 'NOTES'] = f'VALID - Score: {percentage:.1f}%'
+                    df.at[index, "NOTES"] = f"VALID - Score: {percentage:.1f}%"
                 else:
-                    df.at[index, 'NOTES'] = f'INVALID - Score: {percentage:.1f}%'
-                    
+                    df.at[index, "NOTES"] = f"INVALID - Score: {percentage:.1f}%"
+
             except Exception as e:
-                df.at[index, 'NOTES'] = f'Error processing image: {str(e)}'
-        
+                df.at[index, "NOTES"] = f"Error processing image: {str(e)}"
+
         # Convert dataframe to Excel bytes
         output_buffer = io.BytesIO()
-        with pd.ExcelWriter(output_buffer, engine='openpyxl') as writer:
-            df.to_excel(writer, index=False, sheet_name='Processed Data')
-        
+        with pd.ExcelWriter(output_buffer, engine="openpyxl") as writer:
+            df.to_excel(writer, index=False, sheet_name="Processed Data")
+
         output_buffer.seek(0)
-        
+
         # Return Excel file
         return StreamingResponse(
             io.BytesIO(output_buffer.getvalue()),
-            media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            headers={'Content-Disposition': f'attachment; filename=processed_{file.filename}'}
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={
+                "Content-Disposition": f"attachment; filename=processed_{file.filename}"
+            },
         )
-        
+
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Error processing Excel file: {str(e)}")
+        raise HTTPException(
+            status_code=400, detail=f"Error processing Excel file: {str(e)}"
+        )
 
 
 @app.post("/upload_zip")
@@ -332,7 +379,9 @@ async def upload_zip_file(file: UploadFile = File(...)):
                 # Process each extracted file
                 results = []
                 for extracted_file in os.listdir(tmpdirname):
-                    if extracted_file.endswith((".png", ".jpg", ".jpeg", ".bmp", ".gif")):
+                    if extracted_file.endswith(
+                        (".png", ".jpg", ".jpeg", ".bmp", ".gif")
+                    ):
                         file_path = os.path.join(tmpdirname, extracted_file)
 
                         # Read and validate the image
@@ -355,14 +404,65 @@ async def upload_zip_file(file: UploadFile = File(...)):
                                     "validity_score": score,
                                     "percentage": score * 100,
                                     "is_valid": is_valid,
-                                    "message": "Image is valid" if is_valid else "Image is not valid",
+                                    "message": (
+                                        "Image is valid"
+                                        if is_valid
+                                        else "Image is not valid"
+                                    ),
                                 }
                             )
 
                 return JSONResponse(content={"results": results})
 
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Error processing zip file: {str(e)}")
+        raise HTTPException(
+            status_code=400, detail=f"Error processing zip file: {str(e)}"
+        )
+
+
+@app.post("/validate_google_drive")
+async def validate_google_drive_image(request: GoogleDriveRequest):
+    """
+    Validate an image from Google Drive URL
+    """
+    try:
+        result = process_google_drive_image(
+            request.drive_url, extract_features, predict_image_validity
+        )
+        return JSONResponse(content=result)
+    except Exception as e:
+        raise HTTPException(
+            status_code=400, detail=f"Error processing Google Drive image: {str(e)}"
+        )
+
+
+@app.post("/validate_google_drive_multiple")
+async def validate_google_drive_multiple_images(request: GoogleDriveMultipleRequest):
+    """
+    Validate multiple images from Google Drive URLs
+    """
+    if len(request.drive_urls) > 10:  # Limit to 10 URLs per request
+        raise HTTPException(
+            status_code=400, detail="Maximum 10 URLs allowed per request"
+        )
+
+    results = []
+
+    for drive_url in request.drive_urls:
+        try:
+            result = process_google_drive_image(
+                drive_url, extract_features, predict_image_validity
+            )
+            results.append(result)
+        except Exception as e:
+            results.append(
+                {
+                    "drive_url": drive_url,
+                    "error": f"Error processing Google Drive image: {str(e)}",
+                }
+            )
+
+    return JSONResponse(content={"results": results})
 
 
 if __name__ == "__main__":
