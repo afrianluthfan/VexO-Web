@@ -101,7 +101,7 @@ token.pickle
 client_secret*.json
 
 # Model files (uncomment if models should not be tracked)
-# *.keras
+*.keras
 # *.h5
 # *.pkl
 
