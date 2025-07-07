@@ -8,7 +8,7 @@ from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import uvicorn
-from PIL import Image
+from PIL import Image, ImageOps
 import io
 from typing import List
 import pandas as pd
@@ -17,6 +17,9 @@ from fastapi.responses import StreamingResponse
 import tempfile
 import zipfile
 from pydantic import BaseModel
+import pytesseract
+import easyocr
+import re
 
 # Import Google Drive authentication module
 from google_drive_auth import initialize_google_drive_auth, process_google_drive_image
@@ -38,6 +41,17 @@ xception_model = None
 classification_model = None
 model_path = "vexo_v4_2.keras"
 
+# Initialize EasyOCR reader
+ocr_reader = None
+
+# Suspicious watermark keywords to detect
+SUSPICIOUS_WATERMARKS = [
+    "manycam", "faceapp", "reface", "deepfake", "ai generated", 
+    "artificial intelligence", "synthetic", "fake", "generated",
+    "deepface", "faceswap", "deepfacelab", "avatarify", "face2face",
+    "artbreeder", "thispersondoesnotexist", "ai face", "synthetic face"
+]
+
 
 # Pydantic models
 class GoogleDriveRequest(BaseModel):
@@ -50,7 +64,7 @@ class GoogleDriveMultipleRequest(BaseModel):
 
 def initialize_models():
     """Initialize the models once at startup"""
-    global xception_model, classification_model
+    global xception_model, classification_model, ocr_reader
 
     try:
         print("Loading Xception model...")
@@ -64,6 +78,10 @@ def initialize_models():
             raise FileNotFoundError(
                 "Model file 'vexo_v4_2.keras' not found. Please ensure the model file exists in the current directory."
             )
+
+        print("Initializing OCR reader...")
+        ocr_reader = easyocr.Reader(['en'])
+        print("OCR reader initialized successfully!")
 
         print("Models loaded successfully!")
 
@@ -122,9 +140,93 @@ def predict_image_validity(features):
     return float(score)
 
 
+def detect_watermarks(pil_image):
+    """
+    Detect watermarks in an image using OCR
+    Returns True if suspicious watermarks are found, False otherwise
+    """
+    if ocr_reader is None:
+        raise RuntimeError("OCR reader not initialized")
+    
+    try:
+        # Convert PIL image to numpy array for processing
+        image_array = np.array(pil_image)
+        
+        # Process original image
+        watermark_found = _scan_image_for_watermarks(image_array)
+        
+        if watermark_found:
+            return True
+            
+        # Also check horizontally flipped image
+        flipped_image = cv2.flip(image_array, 1)
+        watermark_found = _scan_image_for_watermarks(flipped_image)
+        
+        if watermark_found:
+            return True
+            
+        # Check vertically flipped image
+        v_flipped_image = cv2.flip(image_array, 0)
+        watermark_found = _scan_image_for_watermarks(v_flipped_image)
+        
+        if watermark_found:
+            return True
+            
+        # Check both horizontally and vertically flipped
+        both_flipped_image = cv2.flip(image_array, -1)
+        watermark_found = _scan_image_for_watermarks(both_flipped_image)
+        
+        return watermark_found
+        
+    except Exception as e:
+        print(f"Error during watermark detection: {str(e)}")
+        # If OCR fails, assume no watermarks found to avoid false positives
+        return False
+
+
+def _scan_image_for_watermarks(image_array):
+    """
+    Helper function to scan an image array for watermarks using OCR
+    """
+    try:
+        # Use EasyOCR to extract text
+        results = ocr_reader.readtext(image_array)
+        
+        # Extract all text found in the image
+        extracted_texts = []
+        for (bbox, text, confidence) in results:
+            if confidence > 0.3:  # Only consider text with reasonable confidence
+                extracted_texts.append(text.lower().strip())
+        
+        # Combine all text into a single string for pattern matching
+        full_text = " ".join(extracted_texts).lower()
+        
+        # Check for suspicious watermark keywords
+        for watermark in SUSPICIOUS_WATERMARKS:
+            # Use regex for more flexible matching
+            pattern = re.compile(r'\b' + re.escape(watermark.lower()) + r'\b', re.IGNORECASE)
+            if pattern.search(full_text):
+                print(f"Watermark detected: '{watermark}' found in text: {full_text}")
+                return True
+                
+        # Also check for partial matches or variations
+        for watermark in SUSPICIOUS_WATERMARKS:
+            if watermark.lower() in full_text:
+                print(f"Partial watermark detected: '{watermark}' found in text: {full_text}")
+                return True
+        
+        return False
+        
+    except Exception as e:
+        print(f"Error in OCR scanning: {str(e)}")
+        return False
+
+
 async def process_uploaded_image(file: UploadFile):
     """
-    Process an uploaded image file and return validation results
+    Process an uploaded image file and return validation results with two-stage validation
+    Stage 1: AI Generated detection using Keras model
+    Stage 2: Watermark detection using OCR (only for images that pass stage 1)
     """
     try:
         # Read the uploaded file
@@ -137,21 +239,41 @@ async def process_uploaded_image(file: UploadFile):
         if pil_image.mode != "RGB":
             pil_image = pil_image.convert("RGB")
 
-        # Extract features
+        # Stage 1: AI Generated detection using Keras model
         features = extract_features(pil_image=pil_image)
-
-        # Get prediction score
         score = predict_image_validity(features)
-
-        # Determine validity
-        is_valid = score >= 0.5
-
+        
+        # Check if image passes first validation (AI Generated check)
+        if score < 0.5:
+            return {
+                "filename": file.filename,
+                "validity_score": score,
+                "percentage": score * 100,
+                "is_valid": False,
+                "message": "Image is not valid",
+                "invalid_reason": "AI Generated"
+            }
+        
+        # Stage 2: Watermark detection using OCR (only for images that passed stage 1)
+        has_watermarks = detect_watermarks(pil_image)
+        
+        if has_watermarks:
+            return {
+                "filename": file.filename,
+                "validity_score": score,
+                "percentage": score * 100,
+                "is_valid": False,
+                "message": "Image is not valid",
+                "invalid_reason": "Watermarked"
+            }
+        
+        # Image passed both validations
         return {
             "filename": file.filename,
             "validity_score": score,
             "percentage": score * 100,
-            "is_valid": is_valid,
-            "message": "Image is valid" if is_valid else "Image is not valid",
+            "is_valid": True,
+            "message": "Image is valid"
         }
 
     except Exception as e:
@@ -319,17 +441,25 @@ async def process_excel_file(file: UploadFile = File(...)):
                 if pil_image.mode != "RGB":
                     pil_image = pil_image.convert("RGB")
 
-                # Extract features and predict
+                # Stage 1: AI Generated detection using Keras model
                 features = extract_features(pil_image=pil_image)
                 score = predict_image_validity(features)
-                is_valid = score >= 0.5
-
-                # Set notes based on validation result
                 percentage = score * 100
-                if is_valid:
-                    df.at[index, "NOTES"] = f"VALID - Score: {percentage:.1f}%"
-                else:
-                    df.at[index, "NOTES"] = f"INVALID - Score: {percentage:.1f}%"
+
+                # Check if image passes first validation (AI Generated check)
+                if score < 0.5:
+                    df.at[index, "NOTES"] = f"INVALID - AI Generated - Score: {percentage:.1f}%"
+                    continue
+
+                # Stage 2: Watermark detection using OCR (only for images that passed stage 1)
+                has_watermarks = detect_watermarks(pil_image)
+                
+                if has_watermarks:
+                    df.at[index, "NOTES"] = f"INVALID - Watermarked - Score: {percentage:.1f}%"
+                    continue
+
+                # Image passed both validations
+                df.at[index, "NOTES"] = f"VALID - Score: {percentage:.1f}%"
 
             except Exception as e:
                 df.at[index, "NOTES"] = f"Error processing image: {str(e)}"
@@ -389,26 +519,48 @@ async def upload_zip_file(file: UploadFile = File(...)):
                             contents = img_file.read()
                             pil_image = Image.open(io.BytesIO(contents))
 
-                            # Extract features
+                            # Stage 1: AI Generated detection using Keras model
                             features = extract_features(pil_image=pil_image)
-
-                            # Get prediction score
                             score = predict_image_validity(features)
 
-                            # Determine validity
-                            is_valid = score >= 0.5
+                            # Check if image passes first validation (AI Generated check)
+                            if score < 0.5:
+                                results.append(
+                                    {
+                                        "filename": extracted_file,
+                                        "validity_score": score,
+                                        "percentage": score * 100,
+                                        "is_valid": False,
+                                        "message": "Image is not valid",
+                                        "invalid_reason": "AI Generated"
+                                    }
+                                )
+                                continue
 
+                            # Stage 2: Watermark detection using OCR (only for images that passed stage 1)
+                            has_watermarks = detect_watermarks(pil_image)
+                            
+                            if has_watermarks:
+                                results.append(
+                                    {
+                                        "filename": extracted_file,
+                                        "validity_score": score,
+                                        "percentage": score * 100,
+                                        "is_valid": False,
+                                        "message": "Image is not valid",
+                                        "invalid_reason": "Watermarked"
+                                    }
+                                )
+                                continue
+
+                            # Image passed both validations
                             results.append(
                                 {
                                     "filename": extracted_file,
                                     "validity_score": score,
                                     "percentage": score * 100,
-                                    "is_valid": is_valid,
-                                    "message": (
-                                        "Image is valid"
-                                        if is_valid
-                                        else "Image is not valid"
-                                    ),
+                                    "is_valid": True,
+                                    "message": "Image is valid"
                                 }
                             )
 
@@ -427,7 +579,7 @@ async def validate_google_drive_image(request: GoogleDriveRequest):
     """
     try:
         result = process_google_drive_image(
-            request.drive_url, extract_features, predict_image_validity
+            request.drive_url, extract_features, predict_image_validity, detect_watermarks
         )
         return JSONResponse(content=result)
     except Exception as e:
@@ -451,7 +603,7 @@ async def validate_google_drive_multiple_images(request: GoogleDriveMultipleRequ
     for drive_url in request.drive_urls:
         try:
             result = process_google_drive_image(
-                drive_url, extract_features, predict_image_validity
+                drive_url, extract_features, predict_image_validity, detect_watermarks
             )
             results.append(result)
         except Exception as e:

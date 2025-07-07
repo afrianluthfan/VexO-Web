@@ -1,18 +1,137 @@
-# Python-generated files
+# =============================================================================
+# VEXO Project .gitignore
+# Combined backend (Python/FastAPI) and frontend (Next.js/TypeScript)
+# =============================================================================
+
+# =============================================================================
+# BACKEND - Python/FastAPI
+# =============================================================================
+
+# Python
 backend/__pycache__/
-backend/*.py[oc]
+backend/*.py[cod]
+backend/*$py.class
+backend/*.so
+backend/.Python
 backend/build/
+backend/develop-eggs/
 backend/dist/
+backend/downloads/
+backend/eggs/
+backend/.eggs/
+backend/lib/
+backend/lib64/
+backend/parts/
+backend/sdist/
+backend/var/
 backend/wheels/
-backend/*.egg-info
+backend/pip-wheel-metadata/
+backend/share/python-wheels/
+backend/*.egg-info/
+backend/.installed.cfg
+backend/*.egg
+backend/MANIFEST
 
-# Virtual environments
-backend/.venv
+# PyInstaller
+backend/*.manifest
+backend/*.spec
 
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Installer logs
+backend/pip-log.txt
+backend/pip-delete-this-directory.txt
 
-# dependencies
-frontend/node_modules
+# Unit test / coverage reports
+backend/htmlcov/
+backend/.tox/
+backend/.nox/
+backend/.coverage
+backend/.coverage.*
+backend/.cache
+backend/nosetests.xml
+backend/coverage.xml
+backend/*.cover
+backend/*.py,cover
+backend/.hypothesis/
+backend/.pytest_cache/
+
+# Jupyter Notebook
+backend/.ipynb_checkpoints
+
+# IPython
+backend/profile_default/
+backend/ipython_config.py
+
+# pyenv
+backend/.python-version
+
+# pipenv
+backend/Pipfile.lock
+
+# PEP 582
+backend/__pypackages__/
+
+# Celery stuff
+backend/celerybeat-schedule
+backend/celerybeat.pid
+
+# SageMath parsed files
+backend/*.sage.py
+
+# Environments
+backend/.env
+backend/.venv/
+backend/env/
+backend/venv/
+backend/ENV/
+backend/env.bak/
+backend/venv.bak/
+
+# Spyder project settings
+backend/.spyderproject
+backend/.spyproject
+
+# Rope project settings
+backend/.ropeproject
+
+# mkdocs documentation
+backend/site
+
+# mypy
+backend/.mypy_cache/
+backend/.dmypy.json
+backend/dmypy.json
+
+# Pyre type checker
+backend/.pyre/
+
+# Google Drive API credentials and tokens
+backend/credentials.json
+backend/token.pickle
+backend/client_secret*.json
+
+# Model files (AI/ML models - comment out if models should be tracked)
+backend/*.keras
+backend/*.h5
+backend/*.pkl
+backend/*.joblib
+backend/*.pickle
+
+# Logs
+backend/*.log
+backend/logs/
+
+# Temporary files
+backend/*.tmp
+backend/*.temp
+backend/.tmp/
+backend/.temp/
+
+# =============================================================================
+# FRONTEND - Next.js/TypeScript
+# =============================================================================
+
+# Dependencies
+frontend/node_modules/
 frontend/.pnp
 frontend/.pnp.*
 frontend/.yarn/*
@@ -21,34 +140,119 @@ frontend/!.yarn/plugins
 frontend/!.yarn/releases
 frontend/!.yarn/versions
 
-# testing
-frontend/coverage
+# Testing
+frontend/coverage/
 
-# next.js
+# Next.js
 frontend/.next/
 frontend/out/
 
-# production
-frontend/build
+# Production build
+frontend/build/
 
-# misc
-frontend/.DS_Store
-frontend/*.pem
-
-# debug
-frontend/frontend/npm-debug.log*
-frontend/yarn-debug.log*
-frontend/yarn-error.log*
-frontend/.pnpm-debug.log*
-
-# env files (can opt-in for committing if needed)
+# Environment variables
 frontend/.env*
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
 
-# vercel
-frontend/.vercel
+# Vercel
+frontend/.vercel/
 
-# typescript
+# TypeScript
 frontend/*.tsbuildinfo
 frontend/next-env.d.ts
 
-backend/*.keras
+# ESLint
+frontend/.eslintcache
+
+# Parcel-bundler cache
+frontend/.cache/
+frontend/.parcel-cache/
+
+# Storybook build outputs
+frontend/.out
+frontend/.storybook-out
+
+# Rollup.js default build output
+frontend/dist/
+
+# Gatsby files
+frontend/.cache/
+frontend/public
+
+# Vuepress build output
+frontend/.vuepress/dist
+
+# Serverless directories
+frontend/.serverless/
+
+# FuseBox cache
+frontend/.fusebox/
+
+# DynamoDB Local files
+frontend/.dynamodb/
+
+# TernJS port file
+frontend/.tern-port
+
+# Stores VSCode versions used for testing VSCode extensions
+frontend/.vscode-test
+
+# Yarn v2
+frontend/.yarn/cache
+frontend/.yarn/unplugged
+frontend/.yarn/build-state.yml
+frontend/.yarn/install-state.gz
+frontend/.pnp.*
+
+# =============================================================================
+# SHARED/ROOT LEVEL
+# =============================================================================
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+.temp/
+
+# Logs
+*.log
+logs/
+
+# Package manager lock files (optional - uncomment if you want to ignore them)
+# frontend/package-lock.json
+# frontend/yarn.lock
+# frontend/pnpm-lock.yaml
+
+# Backup files
+*.bak
+*.backup
+*.orig
+
+# Archive files
+*.tar
+*.tar.gz
+*.zip
+*.rar
+*.7z
+
+# Application specific
+# Add any project-specific ignores here

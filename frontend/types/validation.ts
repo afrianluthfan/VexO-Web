@@ -4,6 +4,7 @@ export interface ValidationResult {
   validity_score: number;
   percentage: number;
   message: string;
+  invalid_reason?: "AI Generated" | "Watermarked";
   file_id?: string;
   drive_url?: string;
 }

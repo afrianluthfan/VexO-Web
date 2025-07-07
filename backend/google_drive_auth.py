@@ -273,7 +273,10 @@ def initialize_google_drive_auth() -> bool:
 
 
 def process_google_drive_image(
-    drive_url: str, extract_features_func, predict_validity_func
+    drive_url: str,
+    extract_features_func,
+    predict_validity_func,
+    detect_watermarks_func=None,
 ) -> dict:
     """
     Process an image from Google Drive URL using VEXO validation functions
@@ -282,6 +285,7 @@ def process_google_drive_image(
         drive_url: Google Drive URL containing the image
         extract_features_func: Function to extract features from image
         predict_validity_func: Function to predict image validity
+        detect_watermarks_func: Function to detect watermarks using OCR
 
     Returns:
         dict: Processing results with validation score and status
@@ -306,23 +310,48 @@ def process_google_drive_image(
             else "drive_image"
         )
 
-        # Extract features using provided function
+        # Stage 1: AI Generated detection using Keras model
         features = extract_features_func(pil_image=pil_image)
-
-        # Get prediction score using provided function
         score = predict_validity_func(features)
 
-        # Determine validity
-        is_valid = score >= 0.5
+        # Check if image passes first validation (AI Generated check)
+        if score < 0.5:
+            return {
+                "filename": filename,
+                "file_id": file_id,
+                "drive_url": drive_url,
+                "validity_score": score,
+                "percentage": score * 100,
+                "is_valid": False,
+                "message": "Image is not valid",
+                "invalid_reason": "AI Generated",
+            }
 
+        # Stage 2: Watermark detection using OCR (only for images that passed stage 1)
+        if detect_watermarks_func:
+            has_watermarks = detect_watermarks_func(pil_image)
+
+            if has_watermarks:
+                return {
+                    "filename": filename,
+                    "file_id": file_id,
+                    "drive_url": drive_url,
+                    "validity_score": score,
+                    "percentage": score * 100,
+                    "is_valid": False,
+                    "message": "Image is not valid",
+                    "invalid_reason": "Watermarked",
+                }
+
+        # Image passed both validations
         return {
             "filename": filename,
             "file_id": file_id,
             "drive_url": drive_url,
             "validity_score": score,
             "percentage": score * 100,
-            "is_valid": is_valid,
-            "message": "Image is valid" if is_valid else "Image is not valid",
+            "is_valid": True,
+            "message": "Image is valid",
         }
 
     except Exception as e:

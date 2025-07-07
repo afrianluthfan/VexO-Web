@@ -12,6 +12,10 @@ numpy>=2.1.3
 opencv-python>=4.11.0.86
 pillow>=11.2.1
 
+# OCR dependencies for watermark detection
+pytesseract>=0.3.10
+easyocr>=1.7.1
+
 # Excel processing dependencies
 pandas>=2.0.0
 openpyxl>=3.0.0
