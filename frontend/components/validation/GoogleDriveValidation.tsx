@@ -50,54 +50,60 @@ export const GoogleDriveValidation: React.FC<GoogleDriveValidationProps> = ({
 
   return (
     <Card
-      className={`justify-center shadow-lg border-0 backdrop-blur-sm min-h-[400px] ${
+      className={`justify-center shadow-lg border-0 backdrop-blur-sm min-h-[350px] sm:min-h-[400px] lg:min-h-[450px] ${
         isDarkMode ? "bg-gray-800/80 border-gray-700" : "bg-white/80"
       }`}
     >
-      <CardHeader>
+      <CardHeader className="pb-4 sm:pb-6">
         <CardTitle
-          className={`flex items-center gap-2 ${
+          className={`flex items-center gap-2 text-lg sm:text-xl ${
             isDarkMode ? "text-gray-100" : ""
           }`}
         >
           <Link2 className="h-5 w-5" />
           Google Drive Image Validation
         </CardTitle>
-        <CardDescription className={isDarkMode ? "text-gray-300" : ""}>
+        <CardDescription
+          className={`text-sm sm:text-base ${
+            isDarkMode ? "text-gray-300" : ""
+          }`}
+        >
           Validate images directly from Google Drive. Paste a Google Drive
           sharing link to validate single or multiple images without downloading
           them.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-4 sm:px-6">
         <div className="space-y-4">
           {/* Single Google Drive URL */}
           <div className="space-y-2">
             <label className="text-sm font-medium">
               Single Google Drive Image URL
             </label>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Input
                 type="url"
                 value={googleDriveUrl}
                 onChange={(e) => setGoogleDriveUrl(e.target.value)}
                 placeholder="https://drive.google.com/file/d/FILE_ID/view?usp=sharing"
-                className="flex-1"
+                className="flex-1 text-sm"
               />
               <Button
                 onClick={validateGoogleDriveImage}
                 disabled={!googleDriveUrl.trim() || googleDriveLoading}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 w-full sm:w-auto"
               >
                 {googleDriveLoading ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Validating...
+                    <span className="hidden sm:inline">Validating...</span>
+                    <span className="sm:hidden">Validating</span>
                   </>
                 ) : (
-                  <p className="text-white flex">
+                  <p className="text-white flex items-center">
                     <Sparkles className="h-4 w-4 mr-2" />
-                    Validate
+                    <span className="hidden sm:inline">Validate</span>
+                    <span className="sm:hidden">Validate</span>
                   </p>
                 )}
               </Button>
