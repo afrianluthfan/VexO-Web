@@ -53,23 +53,23 @@ export const LoadingProgress: React.FC<LoadingProgressProps> = ({
   return (
     <Card
       className={cn(
-        "mb-8 transition-colors duration-200",
+        "mb-6 sm:mb-8 transition-colors duration-200 mx-2 sm:mx-0",
         classes.border,
         classes.bg,
         isDarkMode ? "shadow-lg shadow-black/20" : "shadow-md"
       )}
     >
-      <CardContent className="pt-6">
-        <div className="flex items-center gap-3 mb-4">
+      <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
           <Loader2
             className={cn(
-              "h-5 w-5 animate-spin transition-colors duration-200",
+              "h-5 w-5 animate-spin transition-colors duration-200 flex-shrink-0",
               classes.icon
             )}
           />
           <span
             className={cn(
-              "font-medium transition-colors duration-200",
+              "font-medium text-sm sm:text-base transition-colors duration-200",
               classes.text
             )}
           >
@@ -95,7 +95,7 @@ export const LoadingProgress: React.FC<LoadingProgressProps> = ({
 
         <p
           className={cn(
-            "text-sm transition-colors duration-200",
+            "text-xs sm:text-sm transition-colors duration-200 leading-relaxed",
             classes.description
           )}
         >

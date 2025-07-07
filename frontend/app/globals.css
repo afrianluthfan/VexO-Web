@@ -178,3 +178,65 @@
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.3);
 }
+
+/* Mobile responsive improvements */
+@media (max-width: 640px) {
+  /* Ensure buttons have minimum touch target size */
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Better text sizing for small screens */
+  .text-responsive {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* Improve card padding on mobile */
+  .card-responsive {
+    padding: 12px;
+  }
+
+  /* Better spacing for mobile */
+  .gap-responsive {
+    gap: 8px;
+  }
+}
+
+/* Improve focus states for accessibility */
+*:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Better touch interactions */
+@media (hover: none) and (pointer: coarse) {
+  /* Increase button padding on touch devices */
+  button {
+    padding: 12px 16px;
+  }
+
+  /* Improve tap targets */
+  .tap-target {
+    min-height: 48px;
+    min-width: 48px;
+  }
+}
+
+/* Responsive font scaling */
+html {
+  font-size: 16px;
+}
+
+@media (max-width: 640px) {
+  html {
+    font-size: 14px;
+  }
+}
+
+@media (min-width: 1024px) {
+  html {
+    font-size: 18px;
+  }
+}

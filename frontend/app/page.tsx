@@ -107,13 +107,13 @@ export default function Home() {
 
   return (
     <div
-      className={`min-h-screen transition-colors duration-300 p-4 ${
+      className={`min-h-screen transition-colors duration-300 px-4 py-6 sm:p-6 lg:p-8 ${
         isDarkMode
           ? "bg-gradient-to-br from-gray-900 to-gray-800"
           : "bg-gradient-to-br from-slate-50 to-slate-100"
       }`}
     >
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
         <AppHeader isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} />
 
@@ -133,11 +133,11 @@ export default function Home() {
         {(imageResults.length > 0 ||
           googleDriveResults.length > 0 ||
           excelValidationResults.length > 0) && (
-          <div className="flex justify-center mb-6">
+          <div className="flex justify-center mb-6 px-4">
             <Button
               onClick={clearAllResults}
               variant="outline"
-              className={`flex items-center gap-2 ${
+              className={`flex items-center gap-2 w-full sm:w-auto ${
                 isDarkMode
                   ? "border-gray-600 text-gray-300 hover:bg-gray-700"
                   : "border-gray-300 text-gray-700 hover:bg-gray-50"

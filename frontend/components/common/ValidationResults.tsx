@@ -76,40 +76,40 @@ export const ValidationResults: React.FC<ValidationResultsProps> = ({
                     : "border-red-200 bg-red-50/70 hover:bg-red-50/90"
                 )}
               >
-                <CardContent className="pt-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-3">
+                <CardContent className="pt-4 sm:pt-6">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4 gap-4">
+                    <div className="flex items-center gap-3 flex-1">
                       {result.is_valid ? (
                         <CheckCircle2
                           className={cn(
-                            "h-6 w-6 transition-colors duration-200",
+                            "h-5 w-5 sm:h-6 sm:w-6 transition-colors duration-200 flex-shrink-0",
                             isDarkMode ? "text-green-400" : "text-green-600"
                           )}
                         />
                       ) : (
                         <XCircle
                           className={cn(
-                            "h-6 w-6 transition-colors duration-200",
+                            "h-5 w-5 sm:h-6 sm:w-6 transition-colors duration-200 flex-shrink-0",
                             isDarkMode ? "text-red-400" : "text-red-600"
                           )}
                         />
                       )}
-                      <div>
+                      <div className="flex-1 min-w-0">
                         <h3
                           className={cn(
-                            "font-semibold text-lg transition-colors duration-200",
+                            "font-semibold text-base sm:text-lg transition-colors duration-200 truncate",
                             isDarkMode ? "text-gray-100" : "text-gray-900"
                           )}
                         >
                           {variant === "excel" ? `Row ${index + 1}: ` : ""}
                           {result.filename}
                         </h3>
-                        <div className="flex gap-2 mt-1">
+                        <div className="flex flex-wrap gap-2 mt-1">
                           <Badge
                             variant={
                               result.is_valid ? "default" : "destructive"
                             }
-                            className="transition-colors duration-200"
+                            className="transition-colors duration-200 text-xs"
                           >
                             {result.is_valid ? "VALID" : "INVALID"}
                           </Badge>
@@ -146,7 +146,7 @@ export const ValidationResults: React.FC<ValidationResultsProps> = ({
                             target="_blank"
                             rel="noopener noreferrer"
                             className={cn(
-                              "text-xs underline mt-1 block transition-colors duration-200",
+                              "text-xs underline mt-1 block transition-colors duration-200 truncate",
                               isDarkMode
                                 ? "text-blue-400 hover:text-blue-300"
                                 : "text-blue-600 hover:text-blue-800"
@@ -157,10 +157,10 @@ export const ValidationResults: React.FC<ValidationResultsProps> = ({
                         )}
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-center sm:text-right flex-shrink-0">
                       <div
                         className={cn(
-                          "text-2xl font-bold transition-colors duration-200",
+                          "text-xl sm:text-2xl font-bold transition-colors duration-200",
                           isDarkMode ? "text-gray-100" : "text-gray-900"
                         )}
                       >
@@ -168,7 +168,7 @@ export const ValidationResults: React.FC<ValidationResultsProps> = ({
                       </div>
                       <div
                         className={cn(
-                          "text-sm transition-colors duration-200",
+                          "text-xs sm:text-sm transition-colors duration-200",
                           isDarkMode ? "text-gray-400" : "text-gray-600"
                         )}
                       >
