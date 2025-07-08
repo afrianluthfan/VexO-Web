@@ -10,8 +10,8 @@ from PIL import Image
 from typing import List, Optional
 
 from config import SUSPICIOUS_WATERMARKS, OCR_CONFIDENCE_THRESHOLD, OCR_LANGUAGES
-from exceptions import ModelNotInitializedException
-from logger import get_logger
+from models.exceptions import ModelNotInitializedException
+from utils.logger import get_logger
 
 logger = get_logger(__name__)
 

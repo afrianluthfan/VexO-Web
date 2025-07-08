@@ -44,10 +44,11 @@ VEXO/
 │   └── app/             # App router and pages
 │
 ├── 🔧 backend/           # FastAPI Python backend
-│   ├── main.py          # API application
-│   ├── models/          # Pydantic models
-│   ├── services/        # Business logic
-│   └── utils/           # Helper functions
+│   ├── main.py          # API application entry point
+│   ├── config.py        # Configuration settings
+│   ├── models/          # Pydantic models and exceptions
+│   ├── services/        # Business logic and services
+│   └── utils/           # Helper functions and utilities
 │
 └── 📄 README.md         # This file
 ```

@@ -10,9 +10,9 @@ from PIL import Image
 from typing import Optional
 
 from config import MODEL_PATH, VALIDITY_THRESHOLD
-from exceptions import ModelNotInitializedException
-from image_utils import load_and_preprocess_image
-from logger import get_logger
+from models.exceptions import ModelNotInitializedException
+from utils.image_utils import load_and_preprocess_image
+from utils.logger import get_logger
 
 logger = get_logger(__name__)
 

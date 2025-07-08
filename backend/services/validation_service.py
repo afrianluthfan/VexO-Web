@@ -7,11 +7,11 @@ from PIL import Image
 from fastapi import UploadFile
 from typing import Dict, Any
 
-from models import ValidationResult
-from model_manager import model_manager
-from watermark_detector import watermark_detector
-from image_utils import convert_pil_to_rgb
-from exceptions import ImageProcessingException
+from models.models import ValidationResult
+from .model_manager import model_manager
+from .watermark_detector import watermark_detector
+from utils.image_utils import convert_pil_to_rgb
+from models.exceptions import ImageProcessingException
 
 
 class ImageValidationService:

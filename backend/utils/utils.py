@@ -9,7 +9,7 @@ from PIL import Image
 import pandas as pd
 from fastapi.responses import StreamingResponse
 
-from logger import get_logger
+from .logger import get_logger
 
 logger = get_logger(__name__)
 

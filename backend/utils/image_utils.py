@@ -9,7 +9,7 @@ from keras.applications.xception import preprocess_input
 from typing import Optional, Tuple
 
 from config import XCEPTION_INPUT_SIZE
-from exceptions import ImageProcessingException
+from models.exceptions import ImageProcessingException
 
 
 def load_and_preprocess_image(
