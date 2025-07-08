@@ -28,3 +28,7 @@ google-auth-httplib2>=0.2.0
 
 # Additional utility dependencies
 typing-extensions>=4.0.0
+
+# Development dependencies
+pytest>=7.0.0
+pytest-asyncio>=0.21.0
