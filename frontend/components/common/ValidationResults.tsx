@@ -1,5 +1,12 @@
-import React, { useState } from "react";
-import { CheckCircle2, XCircle, Eye } from "lucide-react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
+import {
+  CheckCircle2,
+  XCircle,
+  Eye,
+  ArrowUpDown,
+  ChevronDown,
+  Check,
+} from "lucide-react";
 import { createPortal } from "react-dom";
 import {
   Card,
@@ -123,6 +130,104 @@ interface ValidationResultsProps {
   isDarkMode?: boolean;
 }
 
+type SortOption =
+  | "default"
+  | "valid-first"
+  | "invalid-first"
+  | "alphabetical"
+  | "score-high"
+  | "score-low";
+
+const sortOptions = [
+  { value: "default", label: "Default Order" },
+  { value: "valid-first", label: "Valid First" },
+  { value: "invalid-first", label: "Invalid First" },
+  { value: "alphabetical", label: "Alphabetical" },
+  { value: "score-high", label: "Highest Score" },
+  { value: "score-low", label: "Lowest Score" },
+] as const;
+
+interface SortDropdownProps {
+  value: SortOption;
+  onChange: (value: SortOption) => void;
+  isDarkMode: boolean;
+}
+
+const SortDropdown: React.FC<SortDropdownProps> = ({
+  value,
+  onChange,
+  isDarkMode,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const currentOption = sortOptions.find((option) => option.value === value);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setIsOpen(!isOpen)}
+        className={`flex items-center gap-2 ${
+          isDarkMode
+            ? "border-gray-600 text-gray-300 hover:bg-gray-700"
+            : "border-gray-300 text-gray-700 hover:bg-gray-50"
+        }`}
+      >
+        <ArrowUpDown className="h-4 w-4" />
+        {currentOption?.label}
+        <ChevronDown className="h-4 w-4" />
+      </Button>
+
+      {isOpen && (
+        <div
+          className={`absolute right-0 top-full mt-1 z-50 min-w-[180px] rounded-md border shadow-lg ${
+            isDarkMode
+              ? "bg-gray-800 border-gray-700"
+              : "bg-white border-gray-200"
+          }`}
+        >
+          {sortOptions.map((option) => (
+            <button
+              key={option.value}
+              onClick={() => {
+                onChange(option.value);
+                setIsOpen(false);
+              }}
+              className={`w-full px-3 py-2 text-left text-sm flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-700 first:rounded-t-md last:rounded-b-md ${
+                value === option.value
+                  ? isDarkMode
+                    ? "bg-gray-700 text-gray-100"
+                    : "bg-gray-100 text-gray-900"
+                  : isDarkMode
+                  ? "text-gray-300"
+                  : "text-gray-700"
+              }`}
+            >
+              {option.label}
+              {value === option.value && <Check className="h-4 w-4" />}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const ValidationResults: React.FC<ValidationResultsProps> = ({
   results,
   title,
@@ -133,6 +238,31 @@ export const ValidationResults: React.FC<ValidationResultsProps> = ({
 }) => {
   const [validPopupOpen, setValidPopupOpen] = useState(false);
   const [invalidPopupOpen, setInvalidPopupOpen] = useState(false);
+  const [sortBy, setSortBy] = useState<SortOption>("default");
+
+  // Sorting function
+  const sortedResults = useMemo(() => {
+    const resultsCopy = [...results];
+
+    switch (sortBy) {
+      case "valid-first":
+        return resultsCopy.sort(
+          (a, b) => (b.is_valid ? 1 : 0) - (a.is_valid ? 1 : 0)
+        );
+      case "invalid-first":
+        return resultsCopy.sort(
+          (a, b) => (a.is_valid ? 1 : 0) - (b.is_valid ? 1 : 0)
+        );
+      case "alphabetical":
+        return resultsCopy.sort((a, b) => a.filename.localeCompare(b.filename));
+      case "score-high":
+        return resultsCopy.sort((a, b) => b.validity_score - a.validity_score);
+      case "score-low":
+        return resultsCopy.sort((a, b) => a.validity_score - b.validity_score);
+      default:
+        return resultsCopy;
+    }
+  }, [results, sortBy]);
 
   if (results.length === 0) return null;
 
@@ -142,7 +272,6 @@ export const ValidationResults: React.FC<ValidationResultsProps> = ({
 
   const validCount = validImages.length;
   const invalidCount = invalidImages.length;
-  const totalCount = results.length;
 
   // Get filenames for popups
   const validFilenames = validImages.map((result) => result.filename);
@@ -160,87 +289,94 @@ export const ValidationResults: React.FC<ValidationResultsProps> = ({
       <CardHeader>
         <CardTitle
           className={cn(
-            "flex items-center gap-2 transition-colors duration-200",
+            "flex items-start justify-between gap-4 transition-colors duration-200",
             isDarkMode ? "text-gray-100" : "text-gray-900"
           )}
         >
-          {icon}
-          {title}
-          <div className="flex items-center gap-3 ml-auto">
-            {/* Valid Images Button */}
-            <Button
-              onClick={() => setValidPopupOpen(true)}
-              variant="outline"
-              size="sm"
-              className={`flex items-center gap-2 ${
-                isDarkMode
-                  ? "border-green-600/50 text-green-400 hover:bg-green-950/30"
-                  : "border-green-300 text-green-700 hover:bg-green-50"
-              }`}
-            >
-              <CheckCircle2 className="h-4 w-4" />
-              <Badge
-                variant="secondary"
-                className={
-                  isDarkMode
-                    ? "bg-green-950/50 text-green-400 border-green-600/50"
-                    : "bg-green-100 text-green-800 border-green-300"
-                }
+          <div className="flex flex-col items-start gap-3">
+            <div className="flex items-center gap-2">
+              {icon}
+              {title}
+            </div>
+            <div className="text-sm font-normal">
+              <CardDescription
+                className={cn(
+                  "transition-colors duration-200",
+                  isDarkMode ? "text-gray-300" : "text-gray-600"
+                )}
               >
-                {validCount}
-              </Badge>
-              Valid
-              <Eye className="h-3 w-3 ml-1" />
-            </Button>
-
-            {/* Invalid Images Button */}
-            <Button
-              onClick={() => setInvalidPopupOpen(true)}
-              variant="outline"
-              size="sm"
-              className={`flex items-center gap-2 ${
-                isDarkMode
-                  ? "border-red-600/50 text-red-400 hover:bg-red-950/30"
-                  : "border-red-300 text-red-700 hover:bg-red-50"
-              }`}
-            >
-              <XCircle className="h-4 w-4" />
-              <Badge
-                variant="secondary"
-                className={
-                  isDarkMode
-                    ? "bg-red-950/50 text-red-400 border-red-600/50"
-                    : "bg-red-100 text-red-800 border-red-300"
-                }
-              >
-                {invalidCount}
-              </Badge>
-              Invalid
-              <Eye className="h-3 w-3 ml-1" />
-            </Button>
-
-            {/* Total Count */}
-            <div
-              className={`text-sm ${
-                isDarkMode ? "text-gray-400" : "text-gray-600"
-              }`}
-            >
-              Total: {totalCount}
+                {description}
+              </CardDescription>
             </div>
           </div>
+
+          <div className="flex flex-col items-end gap-3">
+            <div className="flex items-center gap-3">
+              {/* Valid Images Button */}
+              <Button
+                onClick={() => setValidPopupOpen(true)}
+                variant="outline"
+                size="sm"
+                className={`flex items-center gap-2 ${
+                  isDarkMode
+                    ? "border-green-600/50 text-green-400 hover:bg-green-950/30"
+                    : "border-green-300 text-green-700 hover:bg-green-50"
+                }`}
+              >
+                <CheckCircle2 className="h-4 w-4" />
+                <Badge
+                  variant="secondary"
+                  className={
+                    isDarkMode
+                      ? "bg-green-950/50 text-green-400 border-green-600/50"
+                      : "bg-green-100 text-green-800 border-green-300"
+                  }
+                >
+                  {validCount}
+                </Badge>
+                Valid
+                <Eye className="h-3 w-3 ml-1" />
+              </Button>
+
+              {/* Invalid Images Button */}
+              <Button
+                onClick={() => setInvalidPopupOpen(true)}
+                variant="outline"
+                size="sm"
+                className={`flex items-center gap-2 ${
+                  isDarkMode
+                    ? "border-red-600/50 text-red-400 hover:bg-red-950/30"
+                    : "border-red-300 text-red-700 hover:bg-red-50"
+                }`}
+              >
+                <XCircle className="h-4 w-4" />
+                <Badge
+                  variant="secondary"
+                  className={
+                    isDarkMode
+                      ? "bg-red-950/50 text-red-400 border-red-600/50"
+                      : "bg-red-100 text-red-800 border-red-300"
+                  }
+                >
+                  {invalidCount}
+                </Badge>
+                Invalid
+                <Eye className="h-3 w-3 ml-1" />
+              </Button>
+            </div>
+
+            {/* Sort Dropdown */}
+            <SortDropdown
+              value={sortBy}
+              onChange={setSortBy}
+              isDarkMode={isDarkMode}
+            />
+          </div>
         </CardTitle>
-        <CardDescription
-          className={cn(
-            "transition-colors duration-200",
-            isDarkMode ? "text-gray-300" : "text-gray-600"
-          )}
-        >
-          {description}
-        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {results.map((result, index) => (
+          {sortedResults.map((result, index) => (
             <div key={index}>
               <Card
                 className={cn(
@@ -407,7 +543,7 @@ export const ValidationResults: React.FC<ValidationResultsProps> = ({
                   )}
                 </CardContent>
               </Card>
-              {index < results.length - 1 && (
+              {index < sortedResults.length - 1 && (
                 <Separator
                   className={cn(
                     "my-4 transition-colors duration-200",
