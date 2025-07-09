@@ -94,16 +94,18 @@ pnpm dev
 
 ## 📊 **API Endpoints**
 
-| Method | Endpoint                          | Description             | Limits       |
-| ------ | --------------------------------- | ----------------------- | ------------ |
-| `GET`  | `/`                               | API information         | -            |
-| `GET`  | `/health`                         | Health check            | -            |
-| `POST` | `/validate`                       | Single image validation | -            |
-| `POST` | `/validate_multiple`              | Multiple images         | **No Limit** |
-| `POST` | `/process_excel`                  | Excel file processing   | -            |
-| `POST` | `/upload_zip`                     | ZIP file processing     | -            |
-| `POST` | `/validate_google_drive`          | Google Drive single     | -            |
-| `POST` | `/validate_google_drive_multiple` | Google Drive multiple   | **No Limit** |
+| Method | Endpoint                          | Description             | Frontend UI | Limits       |
+| ------ | --------------------------------- | ----------------------- | ----------- | ------------ |
+| `GET`  | `/`                               | API information         | -           | -            |
+| `GET`  | `/health`                         | Health check            | -           | -            |
+| `POST` | `/validate`                       | Single image validation | ✅          | -            |
+| `POST` | `/validate_multiple`              | Multiple images         | ✅          | **No Limit** |
+| `POST` | `/process_excel`                  | Excel file processing   | ✅          | -            |
+| `POST` | `/upload_zip`                     | ZIP file processing     | ❌          | -            |
+| `POST` | `/validate_google_drive`          | Google Drive single     | ✅          | -            |
+| `POST` | `/validate_google_drive_multiple` | Google Drive multiple   | ✅          | **No Limit** |
+
+**Note**: ZIP file processing endpoint exists in the backend but frontend interface is not implemented yet.
 
 ## 🔬 **Validation Process**
 
