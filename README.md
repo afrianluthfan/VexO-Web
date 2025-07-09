@@ -29,7 +29,6 @@
 - 🔍 **Watermark Detection** - OCR-based scanning for suspicious watermarks and text
 - 📊 **Batch Processing** - Validate multiple images simultaneously with no limits
 - 📈 **Excel Integration** - Process Excel files with embedded base64 images
-- 🗂️ **ZIP File Support** - Extract and validate entire image archives
 - ☁️ **Google Drive Integration** - Direct validation from Google Drive URLs
 - 🎨 **Modern UI** - Clean, responsive React/Next.js frontend
 - 🚀 **Production Ready** - Robust error handling and logging
