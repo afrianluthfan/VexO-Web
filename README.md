@@ -60,6 +60,26 @@ VEXO/
 - **Node.js 18.18+** with Bun
 - **TensorFlow model file** (`vexo_v4_2.keras`)
 
+### ⚙️ **Environment Configuration**
+
+Both backend and frontend use environment variables for configuration:
+
+**Backend Configuration:**
+
+```bash
+cd backend
+cp .env.example .env
+# Edit .env with your settings (API port, CORS origins, model thresholds, etc.)
+```
+
+**Frontend Configuration:**
+
+```bash
+cd frontend
+cp .env.example .env.local
+# Edit .env.local with your API URL and feature toggles
+```
+
 ### 🔧 Backend Setup
 
 ```bash

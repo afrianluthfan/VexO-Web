@@ -29,6 +29,10 @@ from config import (
     REQUIRED_EXCEL_COLUMNS,
     SUPPORTED_IMAGE_EXTENSIONS,
     SUPPORTED_EXCEL_EXTENSIONS,
+    CORS_ORIGINS,
+    CORS_CREDENTIALS,
+    CORS_METHODS,
+    CORS_HEADERS,
 )
 from models import (
     GoogleDriveRequest,
@@ -66,10 +70,10 @@ app = FastAPI(title=API_TITLE, version=API_VERSION)
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=CORS_ORIGINS,
+    allow_credentials=CORS_CREDENTIALS,
+    allow_methods=CORS_METHODS,
+    allow_headers=CORS_HEADERS,
 )
 
 

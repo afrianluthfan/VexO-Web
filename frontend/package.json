@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "validate-env": "node validate_env.js"
   },
   "dependencies": {
     "@radix-ui/react-progress": "^1.1.7",

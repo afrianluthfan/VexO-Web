@@ -71,6 +71,45 @@ backend/
 - **TensorFlow model file** (`vexo_v4_2.keras`)
 - **Google Drive credentials** (optional, for Google Drive features)
 
+### ⚙️ **Environment Configuration**
+
+1. **Copy the environment template:**
+
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Configure your environment variables:**
+
+   ```bash
+   # API Configuration
+   API_HOST=0.0.0.0
+   API_PORT=8000
+
+   # CORS Settings (adjust for your frontend)
+   CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+
+   # Model Settings
+   MODEL_PATH=vexo_v4_2.keras
+   VALIDITY_THRESHOLD=0.5
+
+   # Optional: Google Drive integration
+   GOOGLE_CREDENTIALS_FILE=credentials.json
+   ```
+
+3. **For production deployment:**
+
+   ```bash
+   # Update CORS for your domain
+   CORS_ORIGINS=https://yourdomain.com
+
+   # Adjust model sensitivity
+   VALIDITY_THRESHOLD=0.7
+
+   # Set production logging
+   LOG_LEVEL=WARNING
+   ```
+
 ### 🔧 Backend Setup
 
 ```bash

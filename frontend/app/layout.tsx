@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { APP_CONFIG } from "@/lib/api-config";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "VEXO Image Validation",
-  description: "AI-powered image validation system",
+  title: APP_CONFIG.TITLE,
+  description: APP_CONFIG.DESCRIPTION,
 };
 
 export const viewport: Viewport = {

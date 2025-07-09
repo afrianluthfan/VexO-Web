@@ -80,6 +80,41 @@ frontend/
 - **Node.js 18.18+** with [Bun runtime](https://bun.sh/)
 - **VEXO Backend API** running on `http://localhost:8000`
 
+### ⚙️ **Environment Configuration**
+
+1. **Copy the environment template:**
+
+   ```bash
+   cp .env.example .env.local
+   ```
+
+2. **Configure your environment variables:**
+
+   ```bash
+   # API Configuration
+   NEXT_PUBLIC_API_URL=http://localhost:8000
+
+   # Feature toggles
+   NEXT_PUBLIC_ENABLE_GOOGLE_DRIVE=true
+   NEXT_PUBLIC_ENABLE_EXCEL_PROCESSING=true
+   NEXT_PUBLIC_ENABLE_BATCH_VALIDATION=true
+
+   # App settings
+   NEXT_PUBLIC_APP_TITLE=VEXO Image Validation
+   NEXT_PUBLIC_DEFAULT_THEME=system
+   ```
+
+3. **For production deployment:**
+
+   ```bash
+   # Update API URL to your production backend
+   NEXT_PUBLIC_API_URL=https://api.yourdomain.com
+
+   # Optional: Customize app branding
+   NEXT_PUBLIC_APP_TITLE=Your Custom Title
+   NEXT_PUBLIC_APP_DESCRIPTION=Your custom description
+   ```
+
 ### 🎨 Frontend Setup
 
 ```bash

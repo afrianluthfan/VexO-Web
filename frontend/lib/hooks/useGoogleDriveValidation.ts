@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { GoogleDriveResult } from "@/types/validation";
+import { API_CONFIG } from "@/lib/api-config";
 
 export const useGoogleDriveValidation = () => {
   const [googleDriveUrl, setGoogleDriveUrl] = useState<string>("");
@@ -10,8 +11,6 @@ export const useGoogleDriveValidation = () => {
   >([]);
   const [error, setError] = useState<string | null>(null);
 
-  const API_BASE_URL = "http://localhost:8000";
-
   const validateGoogleDriveImage = async () => {
     if (!googleDriveUrl.trim()) return;
 
@@ -20,13 +19,16 @@ export const useGoogleDriveValidation = () => {
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/validate_google_drive`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ drive_url: googleDriveUrl.trim() }),
-      });
+      const response = await fetch(
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.VALIDATE_GOOGLE_DRIVE}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ drive_url: googleDriveUrl.trim() }),
+        }
+      );
 
       const result = await response.json();
 
@@ -52,7 +54,7 @@ export const useGoogleDriveValidation = () => {
 
     try {
       const response = await fetch(
-        `${API_BASE_URL}/validate_google_drive_multiple`,
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.VALIDATE_GOOGLE_DRIVE_MULTIPLE}`,
         {
           method: "POST",
           headers: {

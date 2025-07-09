@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
+import { API_CONFIG } from "@/lib/api-config";
 
 export const useApiHealth = () => {
   const [error, setError] = useState<string | null>(null);
 
-  const API_BASE_URL = "http://localhost:8000";
-
   const checkApiHealth = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/health`);
+      const response = await fetch(
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.HEALTH}`
+      );
       const health = await response.json();
 
       if (!health.models_loaded) {
@@ -19,7 +20,7 @@ export const useApiHealth = () => {
       }
     } catch {
       setError(
-        "Cannot connect to API server. Make sure it's running on http://localhost:8000"
+        `Cannot connect to API server. Make sure it's running on ${API_CONFIG.BASE_URL}`
       );
     }
   };

@@ -1,13 +1,12 @@
 import { useState, useCallback } from "react";
 import { ValidationResult } from "@/types/validation";
+import { API_CONFIG } from "@/lib/api-config";
 
 export const useImageValidation = () => {
   const [files, setFiles] = useState<FileList | null>(null);
   const [results, setResults] = useState<ValidationResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const API_BASE_URL = "http://localhost:8000";
 
   const validateImages = async () => {
     if (!files || files.length === 0) return;
@@ -22,9 +21,10 @@ export const useImageValidation = () => {
     try {
       if (files.length === 1) {
         formData.append("file", files[0]);
-        console.log("Sending single file to", `${API_BASE_URL}/validate`);
+        const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.VALIDATE}`;
+        console.log("Sending single file to", url);
 
-        const response = await fetch(`${API_BASE_URL}/validate`, {
+        const response = await fetch(url, {
           method: "POST",
           body: formData,
         });
@@ -44,12 +44,10 @@ export const useImageValidation = () => {
         for (let i = 0; i < files.length; i++) {
           formData.append("files", files[i]);
         }
-        console.log(
-          "Sending multiple files to",
-          `${API_BASE_URL}/validate_multiple`
-        );
+        const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.VALIDATE_MULTIPLE}`;
+        console.log("Sending multiple files to", url);
 
-        const response = await fetch(`${API_BASE_URL}/validate_multiple`, {
+        const response = await fetch(url, {
           method: "POST",
           body: formData,
         });

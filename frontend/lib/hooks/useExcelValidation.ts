@@ -1,6 +1,7 @@
 import { useState } from "react";
 import * as XLSX from "xlsx";
 import { ValidationResult } from "@/types/validation";
+import { API_CONFIG } from "@/lib/api-config";
 
 export const useExcelValidation = () => {
   const [excelFile, setExcelFile] = useState<File | null>(null);
@@ -14,8 +15,6 @@ export const useExcelValidation = () => {
     ValidationResult[]
   >([]);
   const [error, setError] = useState<string | null>(null);
-
-  const API_BASE_URL = "http://localhost:8000";
 
   const readExcelFile = (file: File) => {
     const reader = new FileReader();
@@ -55,7 +54,7 @@ export const useExcelValidation = () => {
     try {
       // Validate all Google Drive URLs from Excel
       const response = await fetch(
-        `${API_BASE_URL}/validate_google_drive_multiple`,
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.VALIDATE_GOOGLE_DRIVE_MULTIPLE}`,
         {
           method: "POST",
           headers: {
