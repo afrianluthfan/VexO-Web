@@ -22,11 +22,12 @@ export const useGoogleDriveValidation = () => {
   // Helper function to handle API errors
   const handleApiError = (errorMessage: string) => {
     // Check if this is a credentials/authentication error
-    const isAuthError = errorMessage.includes("credentials.json") || 
-                       errorMessage.includes("Authentication failed") ||
-                       errorMessage.includes("Credentials file") ||
-                       errorMessage.includes("not found");
-    
+    const isAuthError =
+      errorMessage.includes("credentials.json") ||
+      errorMessage.includes("Authentication failed") ||
+      errorMessage.includes("Credentials file") ||
+      errorMessage.includes("not found");
+
     setIsCredentialsError(isAuthError);
     setError(errorMessage);
   };
@@ -101,7 +102,9 @@ export const useGoogleDriveValidation = () => {
           setError(null);
           setIsCredentialsError(false);
         } else {
-          handleApiError(result.detail || "Error validating Google Drive image");
+          handleApiError(
+            result.detail || "Error validating Google Drive image"
+          );
         }
       } else {
         // For multiple URLs, use progress-enabled endpoint
@@ -129,7 +132,9 @@ export const useGoogleDriveValidation = () => {
           setError(null);
           setIsCredentialsError(false);
         } else {
-          handleApiError(result.detail || "Error validating Google Drive images");
+          handleApiError(
+            result.detail || "Error validating Google Drive images"
+          );
         }
 
         // Disconnect WebSocket after completion
