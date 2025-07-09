@@ -247,13 +247,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Note**: LICENSE file is pending creation.
 
 ---
-
-<div align="center">
-
-**Made with ❤️ by the VEXO Team**
-
-[![GitHub stars](https://img.shields.io/github/stars/yourusername/vexo?style=social)](https://github.com/yourusername/vexo)
-[![GitHub forks](https://img.shields.io/github/forks/yourusername/vexo?style=social)](https://github.com/yourusername/vexo)
-[![GitHub watchers](https://img.shields.io/github/watchers/yourusername/vexo?style=social)](https://github.com/yourusername/vexo)
-
-</div>
