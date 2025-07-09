@@ -225,16 +225,6 @@ Interactive API documentation is available at:
 - **📰 News Verification** - Verify authenticity of news images
 - **🔍 Research Applications** - Academic studies on AI-generated content
 
-## 🤝 **Contributing**
-
-We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
-
 ## 📄 **License**
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
