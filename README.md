@@ -240,14 +240,6 @@ Interactive API documentation is available at:
 
 **Note**: Rate limiting is planned for future implementation.
 
-## 🌟 **Use Cases**
-
-- **📱 Social Media Platforms** - Detect AI-generated profile pictures
-- **🏢 Corporate Verification** - Validate employee photos and documents
-- **🎨 Art Authentication** - Identify synthetic artwork
-- **📰 News Verification** - Verify authenticity of news images
-- **🔍 Research Applications** - Academic studies on AI-generated content
-
 ## 📄 **License**
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
