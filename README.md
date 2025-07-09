@@ -57,7 +57,7 @@ VEXO/
 ### Prerequisites
 
 - **Python 3.12+** with [UV package manager](https://github.com/astral-sh/uv)
-- **Node.js 18.18+** with pnpm
+- **Node.js 18.18+** with Bun
 - **TensorFlow model file** (`vexo_v4_2.keras`)
 
 ### 🔧 Backend Setup
@@ -84,10 +84,10 @@ uv run uvicorn main:app --reload
 cd frontend
 
 # Install dependencies
-pnpm install
+bun install
 
 # Start development server
-pnpm dev
+bun dev
 
 # Frontend will be available at http://localhost:3000
 ```
@@ -157,7 +157,7 @@ pnpm dev
 ### **DevOps & Tools**
 
 - **UV** - Fast Python package manager
-- **pnpm** - Efficient Node.js package manager
+- **Bun** - Fast JavaScript runtime and package manager
 - **ESLint** - Code linting
 
 ## 📈 **Performance**
@@ -201,7 +201,7 @@ python -m pytest
 
 # Frontend tests (planned)
 cd frontend
-pnpm test
+bun test
 ```
 
 ## 📝 **API Documentation**
