@@ -239,11 +239,3 @@ Interactive API documentation is available at:
 - ✅ **Secure File Processing** - Temporary file cleanup
 
 **Note**: Rate limiting is planned for future implementation.
-
-## 📄 **License**
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-**Note**: LICENSE file is pending creation.
-
----
