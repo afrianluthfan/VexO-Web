@@ -1,138 +1,126 @@
-# 🖼️ VEXO Image Validation API
+# � VEXO Backend - Image Validation API
 
-> A powerful REST API for validating images using deep learning models built with FastAPI and TensorFlow/Keras.
+<div align="center">
 
-[![API Status](https://img.shields.io/badge/API-Live-brightgreen)]()
-[![Python](https://img.shields.io/badge/Python-3.8+-blue)]()
-[![FastAPI](https://img.shields.io/badge/FastAPI-Latest-009688)]()
-[![TensorFlow](https://img.shields.io/badge/TensorFlow-Latest-orange)]()
+![VEXO Backend](https://img.shields.io/badge/VEXO-Backend%20API-blue?style=for-the-badge&logo=fastapi&logoColor=white)
 
----
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115.12+-005571?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Python](https://img.shields.io/badge/Python-3.12+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org/)
+[![TensorFlow](https://img.shields.io/badge/TensorFlow-2.19.0+-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white)](https://tensorflow.org/)
+[![OpenCV](https://img.shields.io/badge/OpenCV-4.11.0+-27338e?style=for-the-badge&logo=opencv&logoColor=white)](https://opencv.org/)
 
-## 📋 Table of Contents
+[![UV](https://img.shields.io/badge/UV-Package%20Manager-purple?style=for-the-badge)](https://github.com/astral-sh/uv)
+[![Pydantic](https://img.shields.io/badge/Pydantic-V2-e92063?style=for-the-badge&logo=pydantic&logoColor=white)](https://pydantic.dev/)
+[![EasyOCR](https://img.shields.io/badge/EasyOCR-1.7.1+-4CAF50?style=for-the-badge)](https://github.com/JaidedAI/EasyOCR)
 
-- [Overview](#-overview)
-- [Features](#-features)
-- [Quick Start](#-quick-start)
-- [Installation](#-installation)
-- [API Reference](#-api-reference)
-- [Usage Examples](#-usage-examples)
-- [Testing](#-testing)
-- [Model Information](#-model-information)
-- [Contributing](#-contributing)
-- [Support](#-support)
-- [License](#-license)
+![Status](https://img.shields.io/badge/status-In%20Development-orange?style=for-the-badge)
+![Version](https://img.shields.io/badge/version-1.0.0-blue?style=for-the-badge)
 
----
+</div>
 
-## 🔍 Overview
+## 🎯 **Overview**
 
-VEXO Image Validation API is a production-ready REST service that leverages machine learning to validate image authenticity and quality. Built with modern Python technologies, it provides fast, reliable image analysis through simple HTTP endpoints.
+The **VEXO Backend** is a powerful FastAPI-based REST API that combines artificial intelligence and computer vision techniques to detect AI-generated images and watermarks. Built with modern Python architecture, it provides high-performance async processing with comprehensive validation capabilities.
 
-**Perfect for:**
+### ✨ **Key Features**
 
-- Content moderation systems
-- Image quality assurance pipelines
-- Automated validation workflows
-- Developer integrations requiring image verification
+- 🤖 **AI-Generated Image Detection** - Xception CNN + custom Keras classification model
+- 🔍 **Watermark Detection** - EasyOCR-based text extraction with pattern matching
+- 📊 **Batch Processing** - Unlimited simultaneous image validation
+- 📈 **Excel Integration** - Process Excel files with embedded base64 images
+- ☁️ **Google Drive Integration** - Direct validation from Google Drive URLs
+- 🚀 **High Performance** - Async FastAPI with optimized image processing
+- 🔧 **Modular Architecture** - Clean separation with services, models, and utilities
 
----
+## �️ **Architecture**
 
-## ✨ Features
-
-- 🚀 **High Performance** - Async processing with FastAPI
-- 🎯 **Accurate Validation** - Pre-trained Xception + custom classification model
-- 📁 **Batch Processing** - Validate up to 10 images simultaneously
-- 🔧 **Developer Friendly** - Interactive API documentation with Swagger UI
-- 🌐 **CORS Enabled** - Ready for web applications
-- 📊 **Health Monitoring** - Built-in health check endpoints
-- 🛡️ **Type Safety** - Full TypeScript-style type hints
-- 📱 **File Validation** - Automatic image format verification
-
----
-
-## 🚀 Quick Start
-
-Get the API running in under 2 minutes:
-
-```bash
-# Clone the repository
-git clone <repository-url>
-cd be-vexo
-
-# Install dependencies with UV (recommended)
-uv init --no-readme
-uv add fastapi uvicorn python-multipart pillow opencv-python tensorflow keras numpy
-
-# Start the API server
-uv run python main.py
+```
+backend/
+├── 🚀 main.py                 # FastAPI application entry point
+├── ⚙️ config.py              # Configuration settings and constants
+├── 📊 models/                 # Pydantic models and exceptions
+│   ├── __init__.py           # Package exports
+│   ├── models.py             # Request/response models
+│   └── exceptions.py         # Custom exception classes
+│
+├── 🔧 services/               # Business logic and core services
+│   ├── __init__.py           # Service exports
+│   ├── model_manager.py      # ML model loading and management
+│   ├── validation_service.py # Image validation orchestration
+│   ├── watermark_detector.py # OCR-based watermark detection
+│   └── google_drive_auth.py  # Google Drive API integration
+│
+├── �️ utils/                  # Utility functions and helpers
+│   ├── __init__.py           # Utility exports
+│   ├── image_utils.py        # Image processing utilities
+│   ├── logger.py             # Logging configuration
+│   └── utils.py              # General helper functions
+│
+├── 📦 requirements.txt        # Python dependencies
+├── � pyproject.toml          # UV project configuration
+├── 🔑 credentials.json.example # Google Drive credentials template
+├── 🤖 vexo_v4_2.keras         # Pre-trained ML model
+└── 📄 logs/                   # Application logs directory
 ```
 
-Your API will be available at:
-
-- **API Base URL:** `http://localhost:8000`
-- **Interactive Docs:** `http://localhost:8000/docs`
-- **Health Check:** `http://localhost:8000/health`
-
----
-
-## 📦 Installation
+## 🚀 **Quick Start**
 
 ### Prerequisites
 
-- **Python 3.8+** (3.12+ recommended)
-- **UV package manager** (recommended) or pip
-- **Model file:** `vexo_v4.keras` (required)
+- **Python 3.12+** with [UV package manager](https://github.com/astral-sh/uv)
+- **TensorFlow model file** (`vexo_v4_2.keras`)
+- **Google Drive credentials** (optional, for Google Drive features)
 
-### Step-by-Step Installation
+### 🔧 Backend Setup
 
-1. **Set up the project environment:**
+```bash
+# Navigate to backend directory
+cd backend
 
-   ```bash
-   cd d:/codes/be-vexo
-   uv init --no-readme
-   ```
+# Install dependencies with UV
+uv pip install -r requirements.txt
 
-2. **Install all dependencies:**
+# Start the API server
+uv run python main.py
+# or
+uv run uvicorn main:app --reload
 
-   ```bash
-   uv add fastapi uvicorn python-multipart pillow opencv-python tensorflow keras numpy
-   ```
-
-3. **Verify model file exists:**
-
-   ```bash
-   # Ensure vexo_v4.keras is in the project root
-   ls vexo_v4.keras
-   ```
-
-4. **Start the server:**
-   ```bash
-   uv run python main.py
-   ```
-
----
-
-## 📚 API Reference
-
-### Base URL
-
-```
-http://localhost:8000
+# API will be available at http://localhost:8000
 ```
 
-### Endpoints
+## 📊 **API Endpoints**
 
-| Method | Endpoint             | Description               | Parameters       |
-| ------ | -------------------- | ------------------------- | ---------------- |
-| `GET`  | `/`                  | API information           | None             |
-| `GET`  | `/health`            | Health status check       | None             |
-| `POST` | `/validate`          | Single image validation   | `file: image`    |
-| `POST` | `/validate_multiple` | Batch validation (max 10) | `files: image[]` |
+| Method | Endpoint                          | Description             | Frontend UI | Limits       |
+| ------ | --------------------------------- | ----------------------- | ----------- | ------------ |
+| `GET`  | `/`                               | API information         | -           | -            |
+| `GET`  | `/health`                         | Health check            | -           | -            |
+| `POST` | `/validate`                       | Single image validation | ✅          | -            |
+| `POST` | `/validate_multiple`              | Multiple images         | ✅          | **No Limit** |
+| `POST` | `/process_excel`                  | Excel file processing   | ✅          | -            |
+| `POST` | `/upload_zip`                     | ZIP file processing     | ❌          | -            |
+| `POST` | `/validate_google_drive`          | Google Drive single     | ✅          | -            |
+| `POST` | `/validate_google_drive_multiple` | Google Drive multiple   | ✅          | **No Limit** |
 
-### Response Format
+**Note**: ZIP file processing endpoint exists but frontend interface is not implemented yet.
 
-#### Single Image Response
+## � **Validation Process**
+
+### **Two-Stage Validation Pipeline**
+
+1. **🤖 AI Detection Stage**
+
+   - Uses Xception CNN model pre-trained on ImageNet
+   - Custom classification model (`vexo_v4_2.keras`) trained on AI-generated images
+   - Confidence score threshold: 50% (configurable in `config.py`)
+   - Supports multiple image orientations and color spaces
+
+2. **🔍 Watermark Detection Stage**
+   - EasyOCR text extraction in multiple orientations (original, horizontal flip, vertical flip, both)
+   - Pattern matching against suspicious watermark database
+   - OCR confidence threshold: 30% (configurable)
+   - Detects AI generation tool watermarks (FaceApp, ManyCam, etc.)
+
+### **Validation Response Format**
 
 ```json
 {
@@ -140,237 +128,158 @@ http://localhost:8000
   "validity_score": 0.85,
   "percentage": 85.0,
   "is_valid": true,
-  "message": "Image is valid"
+  "message": "Image is valid",
+  "invalid_reason": null // Only present if invalid ("AI Generated" or "Watermark Detected")
 }
 ```
 
-#### Batch Response
+## 🛠️ **Technology Stack**
 
-```json
-{
-  "results": [
-    {
-      "filename": "image1.jpg",
-      "validity_score": 0.75,
-      "percentage": 75.0,
-      "is_valid": true,
-      "message": "Image is valid"
-    }
-  ]
-}
-```
+### **Core Framework**
 
-#### Health Check Response
+- **FastAPI** - High-performance async web framework with automatic API documentation
+- **Uvicorn** - Lightning-fast ASGI server implementation
+- **Pydantic V2** - Data validation and serialization with type hints
 
-```json
-{
-  "status": "healthy",
-  "models_loaded": true
-}
-```
+### **Machine Learning & Computer Vision**
 
----
+- **TensorFlow 2.19+** - Deep learning framework for AI model inference
+- **Keras 3.10+** - High-level neural network API
+- **OpenCV 4.11+** - Computer vision library for image transformations
+- **NumPy 2.1+** - Numerical computing for array operations
 
-## 💡 Usage Examples
+### **Specialized Libraries**
 
-### Using cURL
+- **EasyOCR 1.7+** - Optical character recognition for watermark detection
+- **Pillow 11.2+** - Python Imaging Library for image processing
+- **Pandas 2.0+** - Data manipulation for Excel file processing
+- **Google API Client** - Google Drive integration and authentication
 
-**Single Image Validation:**
+### **Development Tools**
+
+- **UV** - Fast Python package manager and project manager
+- **Python-multipart** - Multipart form data parsing
+- **Typing-extensions** - Extended type hints support
+
+## 📈 **Performance**
+
+- **⚡ Async Processing** - Non-blocking image validation with FastAPI
+- **🚀 Optimized Pipeline** - Efficient image preprocessing and model inference
+- **📊 Unlimited Scaling** - No artificial limits on batch processing
+- **💾 Memory Efficient** - Streaming file processing and cleanup
+- **🔧 Development Ready** - Comprehensive error handling and logging
+
+## 🔧 **Configuration**
+
+### **Environment Variables**
 
 ```bash
-curl -X POST \
-  -F "file=@/path/to/your/image.jpg" \
-  http://localhost:8000/validate
+# API Configuration
+LOG_LEVEL=INFO
+API_HOST=0.0.0.0
+API_PORT=8000
+
+# Model Configuration
+MODEL_PATH=vexo_v4_2.keras
+VALIDITY_THRESHOLD=0.5
+XCEPTION_INPUT_SIZE=299,299
+
+# OCR Configuration
+OCR_CONFIDENCE_THRESHOLD=0.3
+OCR_LANGUAGES=en
 ```
 
-**Multiple Images:**
-
-```bash
-curl -X POST \
-  -F "files=@image1.jpg" \
-  -F "files=@image2.jpg" \
-  http://localhost:8000/validate_multiple
-```
-
-### Using Python Requests
+### **Model Configuration (`config.py`)**
 
 ```python
-import requests
+# Model settings
+MODEL_PATH = "vexo_v4_2.keras"
+VALIDITY_THRESHOLD = 0.5
+XCEPTION_INPUT_SIZE = (299, 299)
 
-# Single image
-with open('image.jpg', 'rb') as f:
-    response = requests.post(
-        'http://localhost:8000/validate',
-        files={'file': f}
-    )
-    result = response.json()
-    print(f"Valid: {result['is_valid']}, Score: {result['percentage']:.1f}%")
+# Upload limits (None = no limit)
+MAX_FILES_PER_REQUEST = None
+MAX_URLS_PER_REQUEST = None
+
+# Watermark detection
+SUSPICIOUS_WATERMARKS = [
+    "manycam", "faceapp", "reface", "deepfake",
+    "ai generated", "artificial intelligence", "synthetic"
+]
 ```
 
-### Using JavaScript/Fetch
+## 🧪 **Development**
 
-```javascript
-const formData = new FormData();
-formData.append("file", fileInput.files[0]);
-
-const response = await fetch("http://localhost:8000/validate", {
-  method: "POST",
-  body: formData,
-});
-
-const result = await response.json();
-console.log(`Image is ${result.is_valid ? "valid" : "invalid"}`);
-```
-
----
-
-## 🧪 Testing
-
-### Interactive Testing
-
-1. **Web Interface:** Open `frontend_example.html` in your browser for drag-and-drop testing
-2. **Swagger UI:** Visit `http://localhost:8000/docs` for interactive API documentation
-3. **Health Check:** `curl http://localhost:8000/health`
-
-### Automated Testing
-
-```python
-# Example test script
-import requests
-import json
-
-def test_api():
-    # Test health endpoint
-    health = requests.get('http://localhost:8000/health')
-    assert health.json()['status'] == 'healthy'
-
-    # Test with sample image
-    with open('test_image.jpg', 'rb') as f:
-        response = requests.post(
-            'http://localhost:8000/validate',
-            files={'file': f}
-        )
-
-    result = response.json()
-    assert 'validity_score' in result
-    assert 'is_valid' in result
-
-test_api()
-```
-
----
-
-## 🤖 Model Information
-
-### Architecture
-
-- **Feature Extractor:** Xception (ImageNet pre-trained)
-- **Classifier:** Custom trained model (`vexo_v4.keras`)
-- **Input Size:** 299×299 pixels
-- **Color Space:** RGB (auto-converted from various formats)
-
-### Processing Pipeline
-
-1. **Image Upload** → FastAPI receives multipart form data
-2. **Format Conversion** → PIL processes various image formats
-3. **Preprocessing** → Resize to 299×299, normalize for Xception
-4. **Feature Extraction** → Xception model generates feature vectors
-5. **Classification** → Custom model predicts validity score
-6. **Validation** → Score ≥ 0.5 = Valid image
-
-### Supported Formats
-
-- JPEG/JPG
-- PNG
-- GIF
-- BMP
-- TIFF
-- WebP
-
----
-
-## 🤝 Contributing
-
-We welcome contributions! Here's how you can help:
-
-### Development Setup
+### **Development Commands**
 
 ```bash
-# Fork and clone the repository
-git clone https://github.com/your-username/be-vexo.git
-cd be-vexo
+# Start development server with auto-reload
+uv run uvicorn main:app --reload
 
-# Set up development environment
-uv add --dev pytest black flake8 mypy
+# Run with custom host/port
+uv run uvicorn main:app --host 0.0.0.0 --port 8000
 
-# Run tests
-uv run pytest
+# Direct Python execution
+uv run python main.py
 
-# Format code
-uv run black .
+# Install development dependencies
+uv add --dev pytest pytest-asyncio black flake8 mypy
 ```
 
-### Contribution Guidelines
+### **Module Structure**
 
-1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
-3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
-4. **Push** to the branch (`git push origin feature/amazing-feature`)
-5. **Open** a Pull Request
+- **`main.py`** - FastAPI app initialization, CORS, middleware, and route definitions
+- **`config.py`** - Centralized configuration management
+- **`models/`** - Pydantic models for request/response validation and custom exceptions
+- **`services/`** - Business logic including ML model management and validation orchestration
+- **`utils/`** - Helper functions for image processing, logging, and utilities
 
----
+### **Adding New Features**
 
-## 📞 Support
+1. **Create service logic** in `services/`
+2. **Add request/response models** in `models/models.py`
+3. **Define new endpoint** in `main.py`
+4. **Add configuration** in `config.py`
+5. **Update documentation** and test thoroughly
 
-### Getting Help
+## � **Security Features**
 
-- 📖 **Documentation:** Check the [API docs](http://localhost:8000/docs)
-- 🐛 **Bug Reports:** [Open an issue](https://github.com/your-repo/issues)
-- 💬 **Questions:** [Start a discussion](https://github.com/your-repo/discussions)
-- 📧 **Email:** support@yourcompany.com
+- ✅ **Input Validation** - Comprehensive file type and size validation via Pydantic
+- ✅ **Error Handling** - Sanitized error messages and proper HTTP status codes
+- ✅ **CORS Protection** - Configurable cross-origin requests (currently permissive for development)
+- ✅ **File Processing Security** - Temporary file cleanup and safe image processing
+- ✅ **Type Safety** - Full Pydantic validation for all API inputs/outputs
 
-### Common Issues
+**Note**: Rate limiting and authentication are planned for future implementation.
 
-<details>
-<summary><strong>Model file not found error</strong></summary>
+## 📝 **API Documentation**
 
-```bash
-Error: Model file 'vexo_v4.keras' not found
-```
+Interactive API documentation is automatically generated and available at:
 
-**Solution:** Ensure `vexo_v4.keras` is in the project root directory.
+- **Swagger UI**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
+- **OpenAPI Schema**: http://localhost:8000/openapi.json
 
-</details>
+## 🌟 **Use Cases**
 
-<details>
-<summary><strong>Port already in use</strong></summary>
+- **🔍 Content Moderation** - Detect AI-generated content in user uploads
+- **📱 Social Media Platforms** - Validate profile pictures and user-generated images
+- **🏢 Enterprise Solutions** - Batch validation of employee photos and documents
+- **🎨 Digital Art Authentication** - Identify synthetic artwork and deep fakes
+- **📰 News Verification** - Verify authenticity of news images and media content
 
-```bash
-Error: [Errno 98] Address already in use
-```
-
-**Solution:** Stop other processes using port 8000 or change the port in `main.py`.
-
-</details>
-
----
-
-## 📄 License
+## 📄 **License**
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 🙏 Acknowledgments
-
-- **TensorFlow Team** for the excellent ML framework
-- **FastAPI** for the modern, fast web framework
-- **Keras Applications** for pre-trained models
-- **Contributors** who helped improve this project
-
----
-
 <div align="center">
-  <h3>⭐ Star this repo if you find it helpful!</h3>
-  <p>Built with ❤️ for the developer community</p>
+
+**Made with ❤️ by the VEXO Team**
+
+[![FastAPI](https://img.shields.io/badge/Powered%20by-FastAPI-009688?style=flat&logo=fastapi)](https://fastapi.tiangolo.com/)
+[![Python](https://img.shields.io/badge/Built%20with-Python-3776AB?style=flat&logo=python)](https://python.org/)
+[![TensorFlow](https://img.shields.io/badge/AI%20with-TensorFlow-FF6F00?style=flat&logo=tensorflow)](https://tensorflow.org/)
+
 </div>

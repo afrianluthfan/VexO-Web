@@ -1,414 +1,237 @@
-# 🖼️ VEXO Frontend - Image Validation UI
+# 🎨 VEXO Frontend - Image Validation UI
 
-> A modern Next.js frontend for the VEXO Image Validation API with Google Drive integration.
+<div align="center">
 
-[![Frontend Status](https://img.shields.io/badge/Frontend-Live-brightgreen)]()
-[![Next.js](https://img.shields.io/badge/Next.js-14+-black)]()
-[![React](https://img.shields.io/badge/React-18+-61DAFB)]()
-[![TypeScript](https://img.shields.io/badge/TypeScript-Latest-3178C6)]()
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-Latest-38B2AC)]()
+![VEXO Frontend](https://img.shields.io/badge/VEXO-Frontend-blue?style=for-the-badge&logo=react&logoColor=white)
 
----
+[![Next.js](https://img.shields.io/badge/Next.js-15.3.4-000000?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19.0-61DAFB?style=for-the-badge&logo=react&logoColor=white)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.0-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 
-## 📋 Table of Contents
+[![Bun](https://img.shields.io/badge/Bun-Runtime-000000?style=for-the-badge&logo=bun&logoColor=white)](https://bun.sh/)
+[![ESLint](https://img.shields.io/badge/ESLint-Enabled-4B32C3?style=for-the-badge&logo=eslint&logoColor=white)](https://eslint.org/)
+[![shadcn/ui](https://img.shields.io/badge/shadcn%2Fui-Components-000000?style=for-the-badge&logo=shadcnui&logoColor=white)](https://ui.shadcn.com/)
 
-- [Features](#-features)
-- [Getting Started](#-getting-started)
-- [Configuration](#-configuration)
-- [Usage](#-usage)
-- [Google Drive Setup](#-google-drive-setup)
-- [UI Components](#-ui-components)
-- [Responsive Design](#-responsive-design)
-- [Error Handling](#-error-handling)
-- [Troubleshooting](#-troubleshooting)
-- [API Endpoints](#-api-endpoints-used)
-- [Development](#-development)
-- [Learn More](#learn-more)
-- [Deploy](#deploy-on-vercel)
+![Status](https://img.shields.io/badge/status-In%20Development-orange?style=for-the-badge)
+![Version](https://img.shields.io/badge/version-0.1.0-blue?style=for-the-badge)
 
----
+</div>
 
-## ✨ Features
+## 🎯 **Overview**
 
-- 🚀 **File Upload**: Drag & drop or select images for validation
-- 🔗 **Google Drive Integration**: Validate images directly from Google Drive URLs
-- 📊 **Excel Processing**: Upload Excel files with image data for batch validation
-- 📱 **Responsive Design**: Modern UI with Tailwind CSS and shadcn/ui components
-- ⚡ **Real-time Processing**: Live progress indicators and results display
-- 🎯 **Multiple Validation Modes**: Single, multiple, and batch processing
+The **VEXO Frontend** is a modern, responsive web application built with Next.js 15 and React 19. It provides an intuitive interface for the VEXO Image Validation API, featuring drag-and-drop uploads, Google Drive integration, Excel processing, and real-time validation results.
 
----
+### ✨ **Key Features**
 
-## 🚀 Getting Started
+- �️ **Image Upload Validation** - Drag & drop or select multiple images for AI validation
+- ☁️ **Google Drive Integration** - Validate images directly from Google Drive URLs
+- 📊 **Excel Processing** - Upload and process Excel files with embedded base64 images
+- 🎠 **Validation Carousel** - Interactive carousel display of validation results
+- 🌙 **Dark Mode Support** - Toggle between light and dark themes
+- 📱 **Fully Responsive** - Works seamlessly on desktop, tablet, and mobile
+- ⚡ **Real-time Results** - Live progress indicators and instant validation feedback
 
-Get the frontend running in under 2 minutes:
+## 🏗️ **Architecture**
 
-```bash
-# Clone the repository (if not already done)
-cd frontend
-
-# Install dependencies
-pnpm install
-
-# Start the development server
-pnpm dev
+```
+frontend/
+├── 🖥️ app/                    # Next.js App Router
+│   ├── layout.tsx            # Root layout with providers
+│   ├── page.tsx              # Main application page
+│   ├── globals.css           # Global styles
+│   └── favicon.ico           # App icon
+│
+├── 🧩 components/             # React components
+│   ├── common/               # Shared components
+│   │   ├── AppHeader.tsx     # Application header
+│   │   ├── LoadingProgress.tsx # Progress indicators
+│   │   └── ValidationResults.tsx # Result displays
+│   ├── validation/           # Validation-specific components
+│   │   ├── AllValidationResults.tsx # Combined results view
+│   │   ├── ExcelValidation.tsx     # Excel upload interface
+│   │   ├── GoogleDriveValidation.tsx # Google Drive interface
+│   │   ├── ImageUploadValidation.tsx # Image upload interface
+│   │   └── ValidationCarousel.tsx   # Results carousel
+│   └── ui/                   # shadcn/ui components
+│       ├── button.tsx        # Button component
+│       ├── card.tsx          # Card component
+│       ├── input.tsx         # Input component
+│       └── progress.tsx      # Progress component
+│
+├── 🎣 lib/                    # Utilities and hooks
+│   ├── hooks/                # Custom React hooks
+│   │   ├── useApiHealth.ts   # API health monitoring
+│   │   ├── useDarkMode.ts    # Dark mode management
+│   │   ├── useExcelValidation.ts # Excel processing logic
+│   │   ├── useGoogleDriveValidation.ts # Google Drive logic
+│   │   └── useImageValidation.ts # Image validation logic
+│   └── utils.ts              # Utility functions
+│
+├── 🎨 public/                 # Static assets
+└── 📄 types/                  # TypeScript type definitions
+    └── validation.ts         # Validation response types
 ```
 
-Your frontend will be available at:
-
-- **Frontend URL:** `http://localhost:3000`
-- **Backend API:** `http://localhost:8000` (required)
-
----
-
-## 📦 Installation
+## 🚀 **Quick Start**
 
 ### Prerequisites
 
-- **Node.js 18+**
-- **PNPM package manager** (recommended) or npm
+- **Node.js 18.18+** with [Bun runtime](https://bun.sh/)
 - **VEXO Backend API** running on `http://localhost:8000`
 
-### Step-by-Step Installation
+### 🎨 Frontend Setup
 
-1. **Navigate to frontend directory:**
+```bash
+# Navigate to frontend directory
+cd frontend
 
-   ```bash
-   cd d:/codes/vexo/frontend
-   ```
+# Install dependencies with Bun
+bun install
 
-2. **Install dependencies:**
+# Start development server
+bun dev
 
-   ```bash
-   # Install all dependencies
-   pnpm install
-
-   # Or with npm
-   npm install
-   ```
-
-3. **Start development server:**
-
-   ```bash
-   pnpm dev
-   # or
-   npm run dev
-   ```
-
-4. **Open the application:**
-
-   Navigate to `http://localhost:3000` in your browser
-
----
-
-## 🔧 Configuration
-
-The frontend automatically connects to the backend API at `http://localhost:8000`.
-
-### Custom Backend URL
-
-If your backend is running on a different port, update the `API_BASE_URL` in `app/page.tsx`:
-
-```typescript
-const API_BASE_URL = "http://localhost:YOUR_PORT";
+# Frontend will be available at http://localhost:3000
 ```
 
-### Environment Variables
+## � **Validation Components**
 
-You can also use environment variables by creating a `.env.local` file:
+The frontend provides four main validation interfaces:
 
-```env
-NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+| Component            | Description                   | Features                                         |
+| -------------------- | ----------------------------- | ------------------------------------------------ |
+| **Image Upload**     | Direct file upload validation | Drag & drop, multiple files, progress tracking   |
+| **Google Drive**     | URL-based validation          | Single/multiple URLs, direct Google Drive access |
+| **Excel Processing** | Batch validation from Excel   | Base64 image processing, downloadable results    |
+| **All Results**      | Combined results view         | Unified interface, validation carousel           |
+
+## �️ **Technology Stack**
+
+### **Frontend Framework**
+
+- **Next.js 15** - React framework with App Router and Turbopack
+- **React 19** - Latest React with concurrent features
+- **TypeScript 5** - Type-safe JavaScript development
+
+### **UI & Styling**
+
+- **Tailwind CSS 4** - Utility-first CSS framework
+- **shadcn/ui** - High-quality React components
+- **Radix UI** - Accessible component primitives
+- **Lucide React** - Beautiful SVG icons
+- **Embla Carousel** - Smooth carousel component
+
+### **State Management & Hooks**
+
+- **Custom React Hooks** - Specialized hooks for each validation type
+- **Dark Mode Support** - Theme switching with persistence
+- **API Health Monitoring** - Backend connectivity status
+
+### **Development Tools**
+
+- **Bun** - Fast JavaScript runtime and package manager
+- **ESLint** - Code linting and quality enforcement
+- **TypeScript** - Static type checking
+
+## � **Performance**
+
+- **⚡ Fast Runtime** - Bun runtime for improved performance
+- **🚀 Turbopack** - Next.js blazing-fast bundler
+- **📱 Responsive Design** - Optimized for all device sizes
+- **🎯 Code Splitting** - Automatic component-level splitting
+- **🔧 Development Ready** - Hot reload and fast refresh
+
+## 🔧 **Configuration**
+
+### **Environment Variables**
+
+Create a `.env.local` file in the frontend directory:
+
+```bash
+# Backend API URL
+NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
----
+### **API Integration**
 
-## � Usage
+The frontend automatically connects to the backend API endpoints:
 
-### 1. **File Upload Validation**
-
-- Drag and drop images or click "Select Images"
-- Supports multiple image formats (JPEG, PNG, etc.)
-- Real-time validation results with confidence scores
-
-### 2. **Google Drive Integration**
-
-- **Single Image**: Paste a Google Drive sharing URL
-- **Multiple Images**: Add multiple Google Drive URLs
-- Requires backend Google Drive authentication setup
-
-#### Supported Google Drive URL Formats:
-
-- `https://drive.google.com/file/d/FILE_ID/view?usp=sharing`
-- `https://drive.google.com/file/d/FILE_ID/edit`
-- `https://drive.google.com/open?id=FILE_ID`
-
-### 3. **Excel File Processing**
-
-- Upload Excel files with SELFIE column containing base64 images
-- Required columns: PROVIDER, NOMOR REKENING, NOMOR HP, NAMA, TANGGAL PEMBUKAAN, KTP, SELFIE
-- Download processed file with validation results
-
-## 🔗 Google Drive Setup
-
-For Google Drive functionality to work, ensure your backend is configured with:
-
-1. Google Cloud Project with Drive API enabled
-2. OAuth2 credentials configured
-3. Backend authentication successful
-
-See the backend's `GOOGLE_DRIVE_SETUP.md` for detailed setup instructions.
-
-## 🎨 UI Components
-
-Built with modern React components:
-
-- **shadcn/ui**: High-quality UI components
-- **Tailwind CSS**: Utility-first styling
-- **Lucide Icons**: Beautiful SVG icons
-- **Progress Indicators**: Real-time loading states
-- **Responsive Cards**: Clean result displays
-
-## 📱 Responsive Design
-
-The interface is fully responsive and works on:
-
-- 💻 Desktop computers
-- 📱 Mobile devices
-- 📋 Tablets
-
-## 🔍 Error Handling
-
-Comprehensive error handling for:
-
-- ❌ Invalid file formats
-- 🌐 API connection issues
-- 🔑 Authentication failures
-- 📊 Processing errors
-
-## 🚨 Troubleshooting
-
-### Common Issues:
-
-**API Connection Failed**
-
-- Ensure backend is running on `http://localhost:8000`
-- Check CORS settings in backend
-- Verify health endpoint: `http://localhost:8000/health`
-
-**Google Drive Not Working**
-
-- Check backend Google Drive authentication
-- Ensure proper URL format
-- Verify file permissions in Google Drive
-
-**File Upload Issues**
-
-- Check supported file formats
-- Ensure files are valid images
-- Check file size limits
-
-## 📚 API Endpoints Used
-
-The frontend connects to these backend endpoints:
-
-- `GET /health` - API health check
+- `GET /health` - API health monitoring
 - `POST /validate` - Single image validation
 - `POST /validate_multiple` - Multiple image validation
 - `POST /validate_google_drive` - Google Drive single image
 - `POST /validate_google_drive_multiple` - Google Drive multiple images
 - `POST /process_excel` - Excel file processing
 
-## 🛠️ Development
+**Note**: ZIP file processing endpoint exists in backend but frontend interface is not implemented.
 
-### Project Structure
+## 🧪 **Development**
 
-```
-frontend/
-├── app/
-│   ├── page.tsx          # Main application component
-│   ├── layout.tsx        # Root layout
-│   └── globals.css       # Global styles
-├── components/
-│   └── ui/              # Reusable UI components
-│       ├── button.tsx   # Button component
-│       ├── card.tsx     # Card component
-│       ├── input.tsx    # Input component
-│       └── progress.tsx # Progress indicator
-└── lib/
-    └── utils.ts         # Utility functions
-```
-
-### Development Commands
+### **Development Commands**
 
 ```bash
 # Start development server
-pnpm dev
+bun dev
 
 # Build for production
-pnpm build
+bun build
 
 # Start production server
-pnpm start
+bun start
 
 # Run linting
-pnpm lint
+bun lint
 
-# Type checking
-pnpm type-check
+# Type checking (if configured)
+bunx tsc --noEmit
 ```
 
-### Adding New Features
+### **Project Structure Details**
 
-1. **Create new components** in `components/ui/`
-2. **Add API calls** to `app/page.tsx`
-3. **Update UI state management** with React hooks
-4. **Add error handling** for new features
+- **`app/`** - Next.js App Router with layout and main page
+- **`components/common/`** - Reusable UI components across the app
+- **`components/validation/`** - Specialized validation interface components
+- **`components/ui/`** - Base UI components from shadcn/ui
+- **`lib/hooks/`** - Custom React hooks for validation logic
+- **`lib/utils.ts`** - Utility functions and helpers
+- **`types/`** - TypeScript type definitions
+
+### **Adding New Features**
+
+1. **Create validation component** in `components/validation/`
+2. **Add custom hook** in `lib/hooks/` for logic
+3. **Update main page** in `app/page.tsx`
+4. **Add type definitions** in `types/validation.ts`
 5. **Test responsiveness** across devices
 
----
+## 🔒 **Security Features**
 
-## 🤝 Contributing
+- ✅ **Type Safety** - Full TypeScript implementation
+- ✅ **Input Validation** - Client-side validation before API calls
+- ✅ **Error Boundaries** - Graceful error handling
+- ✅ **Secure API Calls** - Proper error handling and sanitization
 
-### Development Setup
+## 🌟 **Use Cases**
 
-```bash
-# Fork and clone the repository
-git clone https://github.com/your-username/vexo.git
-cd vexo/frontend
+- **📱 Mobile Validation** - Touch-friendly interface for mobile users
+- **🖥️ Desktop Workflows** - Drag & drop for efficient batch processing
+- **📊 Business Integration** - Excel file processing for enterprise use
+- **☁️ Cloud Storage** - Direct Google Drive integration
+- **🎨 Visual Feedback** - Carousel display for result comparison
 
-# Install dependencies
-pnpm install
-
-# Start development server
-pnpm dev
-
-# Run linting and type checking
-pnpm lint && pnpm type-check
-```
-
-### Contribution Guidelines
-
-1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
-3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
-4. **Push** to the branch (`git push origin feature/amazing-feature`)
-5. **Open** a Pull Request
-
----
-
-## 📞 Support
-
-### Getting Help
-
-- 📖 **Documentation:** Check the component documentation
-- 🐛 **Bug Reports:** [Open an issue](https://github.com/your-repo/issues)
-- 💬 **Questions:** [Start a discussion](https://github.com/your-repo/discussions)
-- 📧 **Email:** support@yourcompany.com
-
-### Common Issues
-
-<details>
-<summary><strong>API Connection Failed</strong></summary>
-
-```
-Error: Failed to fetch from API
-```
-
-**Solution:**
-
-- Ensure backend is running on `http://localhost:8000`
-- Check CORS settings in backend
-- Verify health endpoint: `http://localhost:8000/health`
-
-</details>
-
-<details>
-<summary><strong>Google Drive URLs Not Working</strong></summary>
-
-```
-Error: Invalid Google Drive URL format
-```
-
-**Solution:**
-
-- Use proper Google Drive sharing URLs
-- Ensure backend Google Drive authentication is set up
-- Check file permissions in Google Drive
-
-</details>
-
-<details>
-<summary><strong>File Upload Issues</strong></summary>
-
-```
-Error: Unsupported file format
-```
-
-**Solution:**
-
-- Check supported file formats (JPEG, PNG, etc.)
-- Ensure files are valid images
-- Check file size limits
-
-</details>
-
----
-
-## 🌟 Next.js Information
-
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
-### Built With
-
-- **Next.js 14+** - React framework for production
-- **TypeScript** - Type-safe JavaScript
-- **Tailwind CSS** - Utility-first CSS framework
-- **shadcn/ui** - High-quality React components
-- **Lucide Icons** - Beautiful SVG icons
-
-### Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial
-- [Next.js GitHub repository](https://github.com/vercel/next.js) - feedback and contributions welcome
-
----
-
-## 🚀 Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-### Deployment Steps
-
-1. **Connect your repository** to Vercel
-2. **Set environment variables** if needed
-3. **Configure build settings** (automatic for Next.js)
-4. **Deploy** with one click
-
-Check out the [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
----
-
-## 📄 License
+## 📄 **License**
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 🙏 Acknowledgments
-
-- **Next.js Team** for the excellent React framework
-- **Vercel** for the deployment platform
-- **shadcn** for the beautiful UI components
-- **Tailwind CSS** for the utility-first styling
-- **Contributors** who helped improve this project
-
----
-
 <div align="center">
-  <h3>⭐ Star this repo if you find it helpful!</h3>
-  <p>Built with ❤️ for the developer community</p>
+
+**Made by Afrian Luthfan**
+
+[![Next.js](https://img.shields.io/badge/Powered%20by-Next.js-000000?style=flat&logo=next.js)](https://nextjs.org/)
+[![Bun](https://img.shields.io/badge/Runtime-Bun-000000?style=flat&logo=bun)](https://bun.sh/)
+[![TypeScript](https://img.shields.io/badge/Built%20with-TypeScript-007ACC?style=flat&logo=typescript)](https://typescriptlang.org/)
+
 </div>
