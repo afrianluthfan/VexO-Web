@@ -8,11 +8,13 @@ from .model_manager import model_manager
 from .watermark_detector import watermark_detector
 from .validation_service import validation_service
 from .google_drive_auth import initialize_google_drive_auth, process_google_drive_image
+from .progress_manager import progress_manager
 
 __all__ = [
     "model_manager",
     "watermark_detector",
     "validation_service",
+    "progress_manager",
     "initialize_google_drive_auth",
     "process_google_drive_image",
 ]

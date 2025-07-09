@@ -9,14 +9,20 @@ interface LoadingProgressProps {
   progress?: number;
   variant?: "blue" | "green" | "purple";
   isDarkMode?: boolean;
+  totalItems?: number;
+  processedItems?: number;
+  currentItem?: string;
 }
 
 export const LoadingProgress: React.FC<LoadingProgressProps> = ({
   message,
   description,
-  progress = 50,
+  progress = 0,
   variant = "blue",
   isDarkMode = false,
+  totalItems,
+  processedItems,
+  currentItem,
 }) => {
   const variantClasses = {
     blue: {
@@ -92,6 +98,33 @@ export const LoadingProgress: React.FC<LoadingProgressProps> = ({
             style={{ width: `${progress}%` }}
           />
         </div>
+
+        {/* Progress details */}
+        {totalItems !== undefined && processedItems !== undefined && (
+          <div className="mb-2">
+            <div
+              className={cn(
+                "flex justify-between items-center text-xs sm:text-sm transition-colors duration-200",
+                classes.text
+              )}
+            >
+              <span>
+                {processedItems} of {totalItems} processed
+              </span>
+              <span>{progress.toFixed(1)}%</span>
+            </div>
+            {currentItem && (
+              <div
+                className={cn(
+                  "text-xs mt-1 truncate transition-colors duration-200",
+                  classes.description
+                )}
+              >
+                Current: {currentItem}
+              </div>
+            )}
+          </div>
+        )}
 
         <p
           className={cn(

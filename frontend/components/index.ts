@@ -11,6 +11,7 @@ export * from "./ui/separator";
 // Common Components
 export { AppHeader } from "./common/AppHeader";
 export { GoogleDriveSetupInfo } from "./common/GoogleDriveSetupInfo";
+export { GoogleDriveSetupError } from "./common/GoogleDriveSetupError";
 export { LoadingProgress } from "./common/LoadingProgress";
 export { ValidationResults } from "./common/ValidationResults";
 

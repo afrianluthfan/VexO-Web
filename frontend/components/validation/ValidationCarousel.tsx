@@ -15,11 +15,27 @@ interface ValidationCarouselProps {
   isDarkMode: boolean;
   onImageResultsChange?: (
     results: ValidationResult[],
-    loading: boolean
+    loading: boolean,
+    progressData?: {
+      total_items: number;
+      processed_items: number;
+      current_item: string;
+      percentage: number;
+      status: string;
+      message: string;
+    } | null
   ) => void;
   onGoogleDriveResultsChange?: (
     results: GoogleDriveResult[],
-    loading: boolean
+    loading: boolean,
+    progressData?: {
+      total_items: number;
+      processed_items: number;
+      current_item: string;
+      percentage: number;
+      status: string;
+      message: string;
+    } | null
   ) => void;
   onImageClearFunctionReady?: (clearFn: () => void) => void;
   onGoogleDriveClearFunctionReady?: (clearFn: () => void) => void;

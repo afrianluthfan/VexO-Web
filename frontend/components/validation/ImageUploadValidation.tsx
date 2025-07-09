@@ -14,7 +14,18 @@ import { ValidationResult } from "@/types/validation";
 
 interface ImageUploadValidationProps {
   isDarkMode?: boolean;
-  onResultsChange?: (results: ValidationResult[], loading: boolean) => void;
+  onResultsChange?: (
+    results: ValidationResult[],
+    loading: boolean,
+    progressData?: {
+      total_items: number;
+      processed_items: number;
+      current_item: string;
+      percentage: number;
+      status: string;
+      message: string;
+    } | null
+  ) => void;
   onClearFunctionReady?: (clearFn: () => void) => void;
 }
 
@@ -24,13 +35,20 @@ export const ImageUploadValidation: React.FC<ImageUploadValidationProps> = ({
   onClearFunctionReady,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { files, setFiles, results, loading, validateImages, clearFiles } =
-    useImageValidation();
+  const {
+    files,
+    setFiles,
+    results,
+    loading,
+    progressData,
+    validateImages,
+    clearFiles,
+  } = useImageValidation();
 
   // Notify parent component when results or loading state change
   useEffect(() => {
-    onResultsChange?.(results, loading);
-  }, [results, loading, onResultsChange]);
+    onResultsChange?.(results, loading, progressData);
+  }, [results, loading, progressData, onResultsChange]);
 
   // Provide clear function to parent component
   useEffect(() => {

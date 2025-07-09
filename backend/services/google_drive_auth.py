@@ -272,24 +272,18 @@ def initialize_google_drive_auth() -> bool:
     return drive_auth.authenticate()
 
 
-def process_google_drive_image(
-    drive_url: str,
-    extract_features_func,
-    predict_validity_func,
-    detect_watermarks_func=None,
-) -> dict:
+def process_google_drive_image(drive_url: str) -> dict:
     """
-    Process an image from Google Drive URL using VEXO validation functions
+    Process an image from Google Drive URL using VEXO validation service
 
     Args:
         drive_url: Google Drive URL containing the image
-        extract_features_func: Function to extract features from image
-        predict_validity_func: Function to predict image validity
-        detect_watermarks_func: Function to detect watermarks using OCR
 
     Returns:
         dict: Processing results with validation score and status
     """
+    from .validation_service import validation_service
+
     try:
         # Authenticate if not already done
         if not drive_auth.service:
@@ -310,51 +304,83 @@ def process_google_drive_image(
             else "drive_image"
         )
 
-        # Stage 1: AI Generated detection using Keras model
-        features = extract_features_func(pil_image=pil_image)
-        score = predict_validity_func(features)
+        # Use the same validation service as regular image uploads
+        result = validation_service.validate_pil_image(pil_image, filename)
 
-        # Check if image passes first validation (AI Generated check)
-        if score < 0.5:
-            return {
-                "filename": filename,
-                "file_id": file_id,
-                "drive_url": drive_url,
-                "validity_score": score,
-                "percentage": score * 100,
-                "is_valid": False,
-                "message": "Image is not valid",
-                "invalid_reason": "AI Generated",
-            }
+        # Add Google Drive specific fields
+        result["file_id"] = file_id
+        result["drive_url"] = drive_url
 
-        # Stage 2: Watermark detection using OCR (only for images that passed stage 1)
-        if detect_watermarks_func:
-            has_watermarks = detect_watermarks_func(pil_image)
-
-            if has_watermarks:
-                return {
-                    "filename": filename,
-                    "file_id": file_id,
-                    "drive_url": drive_url,
-                    "validity_score": score,
-                    "percentage": score * 100,
-                    "is_valid": False,
-                    "message": "Image is not valid",
-                    "invalid_reason": "Watermarked",
-                }
-
-        # Image passed both validations
-        return {
-            "filename": filename,
-            "file_id": file_id,
-            "drive_url": drive_url,
-            "validity_score": score,
-            "percentage": score * 100,
-            "is_valid": True,
-            "message": "Image is valid",
-        }
+        return result
 
     except Exception as e:
         raise HTTPException(
             status_code=400, detail=f"Error processing Google Drive image: {str(e)}"
+        )
+
+
+def download_google_drive_images_batch(drive_urls: list[str]) -> list[dict]:
+    """
+    Download multiple images from Google Drive URLs and return them as PIL images
+
+    Args:
+        drive_urls: List of Google Drive URLs
+
+    Returns:
+        list: List of dictionaries containing PIL images and metadata
+    """
+    from .validation_service import validation_service
+
+    try:
+        # Authenticate if not already done
+        if not drive_auth.service:
+            if not drive_auth.authenticate():
+                raise RuntimeError("Failed to authenticate with Google Drive")
+
+        downloaded_images = []
+
+        for drive_url in drive_urls:
+            try:
+                # Download image from Google Drive
+                pil_image = drive_auth.download_image_from_url(drive_url)
+                if not pil_image:
+                    downloaded_images.append(
+                        {
+                            "error": f"Failed to download image from {drive_url}",
+                            "drive_url": drive_url,
+                        }
+                    )
+                    continue
+
+                # Extract file ID for filename
+                file_id = drive_auth.extract_file_id_from_url(drive_url)
+                file_info = drive_auth.get_file_info(file_id) if file_id else None
+                filename = (
+                    file_info.get("name", f"drive_image_{file_id}")
+                    if file_info
+                    else "drive_image"
+                )
+
+                downloaded_images.append(
+                    {
+                        "pil_image": pil_image,
+                        "filename": filename,
+                        "file_id": file_id,
+                        "drive_url": drive_url,
+                    }
+                )
+
+            except Exception as e:
+                downloaded_images.append(
+                    {
+                        "error": f"Error downloading from {drive_url}: {str(e)}",
+                        "drive_url": drive_url,
+                    }
+                )
+
+        return downloaded_images
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=400, detail=f"Error downloading Google Drive images: {str(e)}"
         )

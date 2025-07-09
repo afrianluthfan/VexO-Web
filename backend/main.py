@@ -9,11 +9,19 @@ import io
 import tempfile
 import zipfile
 import base64
+import uuid
 from typing import List
 
 import pandas as pd
 import uvicorn
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import (
+    FastAPI,
+    File,
+    UploadFile,
+    HTTPException,
+    WebSocket,
+    WebSocketDisconnect,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 from PIL import Image
@@ -47,6 +55,7 @@ from services import (
     model_manager,
     watermark_detector,
     validation_service,
+    progress_manager,
     initialize_google_drive_auth,
     process_google_drive_image,
 )
@@ -122,6 +131,7 @@ async def root():
             "POST /process_excel": "Process Excel file with image validation",
             "POST /upload_zip": "Upload and process zip file with images",
             "GET /health": "Health check endpoint",
+            "WS /ws/progress/{session_id}": "WebSocket for real-time progress updates",
         },
     )
 
@@ -133,6 +143,23 @@ async def health_check():
     return HealthCheckResponse(
         status="healthy" if models_loaded else "unhealthy", models_loaded=models_loaded
     )
+
+
+@app.websocket("/ws/progress/{session_id}")
+async def websocket_endpoint(websocket: WebSocket, session_id: str):
+    """WebSocket endpoint for real-time progress updates."""
+    try:
+        await progress_manager.connect(websocket, session_id)
+
+        # Keep the connection alive
+        while True:
+            # Wait for any message from client (like ping/pong)
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        progress_manager.disconnect(session_id)
+    except Exception as e:
+        logger.error(f"WebSocket error for session {session_id}: {e}")
+        progress_manager.disconnect(session_id)
 
 
 @app.post("/validate")
@@ -168,6 +195,60 @@ async def validate_multiple_images(files: List[UploadFile] = File(...)):
             results.append({"filename": file.filename, "error": str(e)})
 
     return JSONResponse(content={"results": results})
+
+
+@app.post("/validate_multiple_with_progress/{session_id}")
+async def validate_multiple_images_with_progress(
+    session_id: str, files: List[UploadFile] = File(...)
+):
+    """Validate multiple uploaded images with real-time progress updates."""
+    if MAX_FILES_PER_REQUEST is not None and len(files) > MAX_FILES_PER_REQUEST:
+        raise FileLimitExceededException(
+            f"Maximum {MAX_FILES_PER_REQUEST} files allowed per request"
+        )
+
+    # Initialize progress tracking
+    await progress_manager.start_task(session_id, len(files), "Image Validation")
+
+    results = []
+    processed_count = 0
+
+    try:
+        for i, file in enumerate(files):
+            # Update progress with current file
+            await progress_manager.update_progress(
+                session_id, processed_count, f"Processing {file.filename}"
+            )
+
+            if not validate_image_format(file.content_type):
+                results.append(
+                    {"filename": file.filename, "error": "File must be an image"}
+                )
+            else:
+                try:
+                    result = await validation_service.validate_uploaded_image(file)
+                    results.append(result)
+                except Exception as e:
+                    results.append({"filename": file.filename, "error": str(e)})
+
+            processed_count += 1
+            # Update progress after processing each file
+            await progress_manager.update_progress(
+                session_id, processed_count, f"Completed {file.filename}"
+            )
+
+        # Mark task as completed
+        await progress_manager.complete_task(
+            session_id, f"Successfully processed {len(files)} images"
+        )
+
+        return JSONResponse(content={"results": results, "session_id": session_id})
+
+    except Exception as e:
+        await progress_manager.error_task(session_id, str(e))
+        raise HTTPException(
+            status_code=500, detail=f"Error processing images: {str(e)}"
+        )
 
 
 @app.post("/process_excel")
@@ -284,12 +365,7 @@ async def upload_zip_file(file: UploadFile = File(...)):
 async def validate_google_drive_image(request: GoogleDriveRequest):
     """Validate an image from Google Drive URL."""
     try:
-        result = process_google_drive_image(
-            request.drive_url,
-            model_manager.extract_features,
-            model_manager.predict_image_validity,
-            watermark_detector.detect_watermarks,
-        )
+        result = process_google_drive_image(request.drive_url)
         return JSONResponse(content=result)
     except Exception as e:
         raise HTTPException(
@@ -308,25 +384,156 @@ async def validate_google_drive_multiple_images(request: GoogleDriveMultipleRequ
             f"Maximum {MAX_URLS_PER_REQUEST} URLs allowed per request"
         )
 
-    results = []
-    for drive_url in request.drive_urls:
-        try:
-            result = process_google_drive_image(
-                drive_url,
-                model_manager.extract_features,
-                model_manager.predict_image_validity,
-                watermark_detector.detect_watermarks,
-            )
-            results.append(result)
-        except Exception as e:
-            results.append(
-                {
-                    "drive_url": drive_url,
-                    "error": f"Error processing Google Drive image: {str(e)}",
-                }
-            )
+    try:
+        # Step 1: Download all images first
+        from services.google_drive_auth import download_google_drive_images_batch
 
-    return JSONResponse(content={"results": results})
+        downloaded_images = download_google_drive_images_batch(request.drive_urls)
+
+        # Step 2: Process all downloaded images using the same validation service
+        results = []
+
+        for item in downloaded_images:
+            if "error" in item:
+                # Add error result
+                results.append({"drive_url": item["drive_url"], "error": item["error"]})
+            else:
+                # Validate the image using the same service as regular uploads
+                try:
+                    from services.validation_service import validation_service
+
+                    result = validation_service.validate_pil_image(
+                        item["pil_image"], item["filename"]
+                    )
+
+                    # Add Google Drive specific fields
+                    result["file_id"] = item["file_id"]
+                    result["drive_url"] = item["drive_url"]
+
+                    results.append(result)
+
+                except Exception as e:
+                    results.append(
+                        {
+                            "drive_url": item["drive_url"],
+                            "error": f"Validation error: {str(e)}",
+                        }
+                    )
+
+        return JSONResponse(content={"results": results})
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error processing Google Drive images: {str(e)}"
+        )
+
+
+@app.post("/validate_google_drive_multiple_with_progress/{session_id}")
+async def validate_google_drive_multiple_images_with_progress(
+    session_id: str, request: GoogleDriveMultipleRequest
+):
+    """Validate multiple images from Google Drive URLs with real-time progress updates."""
+    if (
+        MAX_URLS_PER_REQUEST is not None
+        and len(request.drive_urls) > MAX_URLS_PER_REQUEST
+    ):
+        raise FileLimitExceededException(
+            f"Maximum {MAX_URLS_PER_REQUEST} URLs allowed per request"
+        )
+
+    # Calculate total steps: download + validation for each URL
+    total_steps = len(request.drive_urls) * 2  # Download + validate each image
+
+    # Initialize progress tracking
+    await progress_manager.start_task(
+        session_id, total_steps, "Google Drive Validation"
+    )
+
+    results = []
+    processed_count = 0
+
+    try:
+        # Step 1: Download all images first
+        await progress_manager.update_progress(
+            session_id, processed_count, "Starting Google Drive downloads..."
+        )
+
+        from services.google_drive_auth import download_google_drive_images_batch
+
+        downloaded_images = download_google_drive_images_batch(request.drive_urls)
+
+        # Update progress for downloads
+        for i, downloaded_item in enumerate(downloaded_images):
+            processed_count += 1
+            drive_url = downloaded_item.get("drive_url", f"URL {i+1}")
+            if "error" in downloaded_item:
+                await progress_manager.update_progress(
+                    session_id, processed_count, f"Download failed: {drive_url}"
+                )
+            else:
+                await progress_manager.update_progress(
+                    session_id, processed_count, f"Downloaded: {drive_url}"
+                )
+
+        # Step 2: Process all downloaded images using the same validation service
+        valid_images = [item for item in downloaded_images if "pil_image" in item]
+
+        for i, item in enumerate(downloaded_images):
+            processed_count += 1
+
+            if "error" in item:
+                # Add error result
+                results.append({"drive_url": item["drive_url"], "error": item["error"]})
+                await progress_manager.update_progress(
+                    session_id,
+                    processed_count,
+                    f"Skipped due to error: {item['drive_url']}",
+                )
+            else:
+                # Validate the image using the same service as regular uploads
+                try:
+                    from services.validation_service import validation_service
+
+                    result = validation_service.validate_pil_image(
+                        item["pil_image"], item["filename"]
+                    )
+
+                    # Add Google Drive specific fields
+                    result["file_id"] = item["file_id"]
+                    result["drive_url"] = item["drive_url"]
+
+                    results.append(result)
+
+                    await progress_manager.update_progress(
+                        session_id, processed_count, f"Validated: {item['drive_url']}"
+                    )
+
+                except Exception as e:
+                    results.append(
+                        {
+                            "drive_url": item["drive_url"],
+                            "error": f"Validation error: {str(e)}",
+                        }
+                    )
+                    await progress_manager.update_progress(
+                        session_id,
+                        processed_count,
+                        f"Validation failed: {item['drive_url']}",
+                    )
+
+        # Mark task as completed
+        await progress_manager.complete_task(
+            session_id,
+            f"Successfully processed {len(request.drive_urls)} Google Drive images",
+        )
+
+        return JSONResponse(content={"results": results, "session_id": session_id})
+
+    except Exception as e:
+        await progress_manager.error_task(session_id, str(e))
+        raise HTTPException(
+            status_code=500, detail=f"Error processing Google Drive images: {str(e)}"
+        )
 
 
 if __name__ == "__main__":

@@ -11,7 +11,6 @@ export const useGoogleDriveValidation = () => {
     GoogleDriveResult[]
   >([]);
   const [error, setError] = useState<string | null>(null);
-  const [isCredentialsError, setIsCredentialsError] = useState(false);
 
   const {
     progressData,
@@ -19,27 +18,12 @@ export const useGoogleDriveValidation = () => {
     disconnect: disconnectWS,
   } = useProgressWebSocket();
 
-  // Helper function to handle API errors
-  const handleApiError = (errorMessage: string) => {
-    // Check if this is a credentials/authentication error
-    const isAuthError = errorMessage.includes("credentials.json") || 
-                       errorMessage.includes("Authentication failed") ||
-                       errorMessage.includes("Credentials file") ||
-                       errorMessage.includes("not found");
-    
-    setIsCredentialsError(isAuthError);
-    setError(errorMessage);
-  };
-
   const validateGoogleDriveImage = async () => {
     if (!googleDriveUrl.trim()) return;
 
     setGoogleDriveLoading(true);
     setGoogleDriveResults([]);
     setError(null);
-
-    // Ensure any previous progress data is cleared for single image validation
-    disconnectWS();
 
     try {
       const response = await fetch(
@@ -57,13 +41,11 @@ export const useGoogleDriveValidation = () => {
 
       if (response.ok) {
         setGoogleDriveResults([result]);
-        setError(null);
-        setIsCredentialsError(false);
       } else {
-        handleApiError(result.detail || "Error validating Google Drive image");
+        setError(result.detail || "Error validating Google Drive image");
       }
     } catch (error) {
-      handleApiError("Failed to connect to API: " + (error as Error).message);
+      setError("Failed to connect to API: " + (error as Error).message);
     } finally {
       setGoogleDriveLoading(false);
     }
@@ -80,9 +62,6 @@ export const useGoogleDriveValidation = () => {
     try {
       if (validUrls.length === 1) {
         // For single URL, use the original endpoint
-        // Ensure any previous progress data is cleared
-        disconnectWS();
-
         const response = await fetch(
           `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.VALIDATE_GOOGLE_DRIVE}`,
           {
@@ -98,10 +77,8 @@ export const useGoogleDriveValidation = () => {
 
         if (response.ok) {
           setGoogleDriveResults([result]);
-          setError(null);
-          setIsCredentialsError(false);
         } else {
-          handleApiError(result.detail || "Error validating Google Drive image");
+          setError(result.detail || "Error validating Google Drive image");
         }
       } else {
         // For multiple URLs, use progress-enabled endpoint
@@ -126,10 +103,8 @@ export const useGoogleDriveValidation = () => {
 
         if (response.ok) {
           setGoogleDriveResults(result.results);
-          setError(null);
-          setIsCredentialsError(false);
         } else {
-          handleApiError(result.detail || "Error validating Google Drive images");
+          setError(result.detail || "Error validating Google Drive images");
         }
 
         // Disconnect WebSocket after completion
@@ -138,7 +113,7 @@ export const useGoogleDriveValidation = () => {
         }, 2000);
       }
     } catch (error) {
-      handleApiError("Failed to connect to API: " + (error as Error).message);
+      setError("Failed to connect to API: " + (error as Error).message);
       disconnectWS();
     } finally {
       setGoogleDriveLoading(false);
@@ -173,7 +148,6 @@ export const useGoogleDriveValidation = () => {
     setGoogleDriveUrls([""]);
     setGoogleDriveResults([]);
     setError(null);
-    setIsCredentialsError(false);
     disconnectWS();
   }, [disconnectWS]);
 
@@ -185,7 +159,6 @@ export const useGoogleDriveValidation = () => {
     googleDriveResults,
     progressData,
     error,
-    isCredentialsError,
     validateGoogleDriveImage,
     validateMultipleGoogleDriveImages,
     addGoogleDriveUrl,

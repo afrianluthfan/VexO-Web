@@ -12,10 +12,22 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useGoogleDriveValidation } from "@/lib/hooks/useGoogleDriveValidation";
 import { GoogleDriveResult } from "@/types/validation";
+import { GoogleDriveSetupError } from "@/components/common/GoogleDriveSetupError";
 
 interface GoogleDriveValidationProps {
   isDarkMode?: boolean;
-  onResultsChange?: (results: GoogleDriveResult[], loading: boolean) => void;
+  onResultsChange?: (
+    results: GoogleDriveResult[],
+    loading: boolean,
+    progressData?: {
+      total_items: number;
+      processed_items: number;
+      current_item: string;
+      percentage: number;
+      status: string;
+      message: string;
+    } | null
+  ) => void;
   onClearFunctionReady?: (clearFn: () => void) => void;
 }
 
@@ -30,6 +42,9 @@ export const GoogleDriveValidation: React.FC<GoogleDriveValidationProps> = ({
     googleDriveUrls,
     googleDriveLoading,
     googleDriveResults,
+    progressData,
+    error,
+    isCredentialsError,
     validateGoogleDriveImage,
     validateMultipleGoogleDriveImages,
     addGoogleDriveUrl,
@@ -40,8 +55,8 @@ export const GoogleDriveValidation: React.FC<GoogleDriveValidationProps> = ({
 
   // Notify parent component when results or loading state change
   useEffect(() => {
-    onResultsChange?.(googleDriveResults, googleDriveLoading);
-  }, [googleDriveResults, googleDriveLoading, onResultsChange]);
+    onResultsChange?.(googleDriveResults, googleDriveLoading, progressData);
+  }, [googleDriveResults, googleDriveLoading, progressData, onResultsChange]);
 
   // Provide clear function to parent component
   useEffect(() => {
@@ -74,6 +89,11 @@ export const GoogleDriveValidation: React.FC<GoogleDriveValidationProps> = ({
         </CardDescription>
       </CardHeader>
       <CardContent className="px-4 sm:px-6">
+        {/* Google Drive Setup Error */}
+        {isCredentialsError && error && (
+          <GoogleDriveSetupError isDarkMode={isDarkMode} error={error} />
+        )}
+
         <div className="space-y-4">
           {/* Single Google Drive URL */}
           <div className="space-y-2">

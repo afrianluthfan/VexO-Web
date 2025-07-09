@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { ValidationResult } from "@/types/validation";
 import { API_CONFIG } from "@/lib/api-config";
+import { useProgressWebSocket } from "./useProgressWebSocket";
 
 export const useImageValidation = () => {
   const [files, setFiles] = useState<FileList | null>(null);
@@ -8,11 +9,16 @@ export const useImageValidation = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const {
+    progressData,
+    connect: connectWS,
+    disconnect: disconnectWS,
+  } = useProgressWebSocket();
+
   const validateImages = async () => {
     if (!files || files.length === 0) return;
 
     console.log("Starting validation with", files.length, "files");
-    const formData = new FormData();
 
     setLoading(true);
     setResults([]);
@@ -20,6 +26,11 @@ export const useImageValidation = () => {
 
     try {
       if (files.length === 1) {
+        // For single file, use the original endpoint (no progress needed)
+        // Ensure any previous progress data is cleared
+        disconnectWS();
+
+        const formData = new FormData();
         formData.append("file", files[0]);
         const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.VALIDATE}`;
         console.log("Sending single file to", url);
@@ -40,11 +51,19 @@ export const useImageValidation = () => {
           console.error("Error from API:", result);
         }
       } else {
-        // Multiple files
+        // For multiple files, use progress-enabled endpoint
+        const newSessionId = connectWS();
+        if (!newSessionId) {
+          setError("Failed to establish progress connection");
+          return;
+        }
+
+        const formData = new FormData();
         for (let i = 0; i < files.length; i++) {
           formData.append("files", files[i]);
         }
-        const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.VALIDATE_MULTIPLE}`;
+
+        const url = `${API_CONFIG.BASE_URL}/validate_multiple_with_progress/${newSessionId}`;
         console.log("Sending multiple files to", url);
 
         const response = await fetch(url, {
@@ -62,10 +81,16 @@ export const useImageValidation = () => {
           setError(result.detail || "Error validating images");
           console.error("Error from API:", result);
         }
+
+        // Disconnect WebSocket after completion
+        setTimeout(() => {
+          disconnectWS();
+        }, 2000); // Keep connection for 2 seconds to show completion
       }
     } catch (error) {
       console.error("Network error:", error);
       setError("Failed to connect to API: " + (error as Error).message);
+      disconnectWS();
     } finally {
       setLoading(false);
     }
@@ -75,7 +100,8 @@ export const useImageValidation = () => {
     setFiles(null);
     setResults([]);
     setError(null);
-  }, []);
+    disconnectWS();
+  }, [disconnectWS]);
 
   return {
     files,
@@ -83,6 +109,7 @@ export const useImageValidation = () => {
     results,
     loading,
     error,
+    progressData,
     validateImages,
     clearFiles,
   };

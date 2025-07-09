@@ -22,6 +22,14 @@ export default function Home() {
   // Local state for image validation results (managed by child component)
   const [imageResults, setImageResults] = useState<ValidationResult[]>([]);
   const [imageLoading, setImageLoading] = useState(false);
+  const [imageProgressData, setImageProgressData] = useState<{
+    total_items: number;
+    processed_items: number;
+    current_item: string;
+    percentage: number;
+    status: string;
+    message: string;
+  } | null>(null);
   const [imageClearFunction, setImageClearFunction] = useState<
     (() => void) | null
   >(null);
@@ -31,6 +39,14 @@ export default function Home() {
     GoogleDriveResult[]
   >([]);
   const [googleDriveLoading, setGoogleDriveLoading] = useState(false);
+  const [googleDriveProgressData, setGoogleDriveProgressData] = useState<{
+    total_items: number;
+    processed_items: number;
+    current_item: string;
+    percentage: number;
+    status: string;
+    message: string;
+  } | null>(null);
   const [googleDriveClearFunction, setGoogleDriveClearFunction] = useState<
     (() => void) | null
   >(null);
@@ -48,18 +64,42 @@ export default function Home() {
 
   // Callback for image validation results
   const handleImageResultsChange = useCallback(
-    (results: ValidationResult[], loading: boolean) => {
+    (
+      results: ValidationResult[],
+      loading: boolean,
+      progressData?: {
+        total_items: number;
+        processed_items: number;
+        current_item: string;
+        percentage: number;
+        status: string;
+        message: string;
+      } | null
+    ) => {
       setImageResults(results);
       setImageLoading(loading);
+      setImageProgressData(progressData || null);
     },
     []
   );
 
   // Callback for Google Drive validation results
   const handleGoogleDriveResultsChange = useCallback(
-    (results: GoogleDriveResult[], loading: boolean) => {
+    (
+      results: GoogleDriveResult[],
+      loading: boolean,
+      progressData?: {
+        total_items: number;
+        processed_items: number;
+        current_item: string;
+        percentage: number;
+        status: string;
+        message: string;
+      } | null
+    ) => {
       setGoogleDriveResults(results);
       setGoogleDriveLoading(loading);
+      setGoogleDriveProgressData(progressData || null);
     },
     []
   );
@@ -153,10 +193,16 @@ export default function Home() {
         {imageLoading && (
           <LoadingProgress
             message="Processing your images..."
-            description="AI models are analyzing your images for quality and validity."
-            progress={33}
+            description={
+              imageProgressData?.message ||
+              "AI models are analyzing your images for quality and validity."
+            }
+            progress={imageProgressData?.percentage || 0}
             variant="blue"
             isDarkMode={isDarkMode}
+            totalItems={imageProgressData?.total_items}
+            processedItems={imageProgressData?.processed_items}
+            currentItem={imageProgressData?.current_item}
           />
         )}
 
@@ -173,10 +219,16 @@ export default function Home() {
         {googleDriveLoading && (
           <LoadingProgress
             message="Processing Google Drive images..."
-            description="Downloading and analyzing images from Google Drive."
-            progress={45}
+            description={
+              googleDriveProgressData?.message ||
+              "Downloading and analyzing images from Google Drive."
+            }
+            progress={googleDriveProgressData?.percentage || 0}
             variant="purple"
             isDarkMode={isDarkMode}
+            totalItems={googleDriveProgressData?.total_items}
+            processedItems={googleDriveProgressData?.processed_items}
+            currentItem={googleDriveProgressData?.current_item}
           />
         )}
 
