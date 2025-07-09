@@ -9,12 +9,12 @@
 [![TensorFlow](https://img.shields.io/badge/TensorFlow-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white)](https://tensorflow.org/)
 [![OpenCV](https://img.shields.io/badge/OpenCV-27338e?style=for-the-badge&logo=opencv&logoColor=white)](https://opencv.org/)
 
-[![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org/)
+[![Python](https://img.shields.io/badge/Python-3.12+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://typescriptlang.org/)
 [![UV](https://img.shields.io/badge/UV-Package%20Manager-purple?style=for-the-badge)](https://github.com/astral-sh/uv)
 
 ![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
-![Status](https://img.shields.io/badge/status-Production%20Ready-brightgreen?style=for-the-badge)
+![Status](https://img.shields.io/badge/status-In%20Development-orange?style=for-the-badge)
 ![Version](https://img.shields.io/badge/version-1.0.0-blue?style=for-the-badge)
 
 </div>
@@ -31,7 +31,7 @@
 - 📈 **Excel Integration** - Process Excel files with embedded base64 images
 - ☁️ **Google Drive Integration** - Direct validation from Google Drive URLs
 - 🎨 **Modern UI** - Clean, responsive React/Next.js frontend
-- 🚀 **Production Ready** - Robust error handling and logging
+- � **Development Ready** - Robust error handling and logging
 
 ## 🏗️ **Architecture**
 
@@ -56,8 +56,8 @@ VEXO/
 
 ### Prerequisites
 
-- **Python 3.8+** with [UV package manager](https://github.com/astral-sh/uv)
-- **Node.js 18+** with pnpm
+- **Python 3.12+** with [UV package manager](https://github.com/astral-sh/uv)
+- **Node.js 18.18+** with pnpm
 - **TensorFlow model file** (`vexo_v4_2.keras`)
 
 ### 🔧 Backend Setup
@@ -146,25 +146,24 @@ pnpm dev
 
 ### **Frontend**
 
-- **Next.js 14** - React framework with App Router
+- **Next.js 15** - React framework with App Router
 - **TypeScript** - Type-safe JavaScript
 - **Tailwind CSS** - Utility-first CSS framework
 - **shadcn/ui** - Modern UI components
-- **React Hook Form** - Form management
+- **React 19** - Latest React features
 
 ### **DevOps & Tools**
 
 - **UV** - Fast Python package manager
 - **pnpm** - Efficient Node.js package manager
 - **ESLint** - Code linting
-- **Prettier** - Code formatting
 
 ## 📈 **Performance**
 
 - **🚀 Fast Processing** - Optimized image preprocessing pipeline
 - **📊 Scalable** - Async processing with no file limits
 - **💾 Memory Efficient** - Streaming file processing
-- **🔧 Production Ready** - Comprehensive error handling
+- **🔧 Development Ready** - Comprehensive error handling
 
 ## 🔧 **Configuration**
 
@@ -191,12 +190,14 @@ MAX_FILES_PER_REQUEST = None  # No limit
 
 ## 🧪 **Testing**
 
+**Note**: Test suite is currently under development.
+
 ```bash
-# Backend tests
+# Backend tests (planned)
 cd backend
 python -m pytest
 
-# Frontend tests
+# Frontend tests (planned)
 cd frontend
 pnpm test
 ```
@@ -212,9 +213,10 @@ Interactive API documentation is available at:
 
 - ✅ **Input Validation** - Comprehensive file type and size validation
 - ✅ **Error Handling** - Sanitized error messages
-- ✅ **CORS Protection** - Configurable cross-origin requests
-- ✅ **Rate Limiting** - Configurable request limits
+- ✅ **CORS Protection** - Configurable cross-origin requests (currently permissive for development)
 - ✅ **Secure File Processing** - Temporary file cleanup
+
+**Note**: Rate limiting is planned for future implementation.
 
 ## 🌟 **Use Cases**
 
@@ -228,20 +230,7 @@ Interactive API documentation is available at:
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 **Acknowledgments**
-
-- **TensorFlow Team** - For the amazing ML framework
-- **FastAPI Team** - For the excellent web framework
-- **Next.js Team** - For the powerful React framework
-- **OpenCV Community** - For computer vision tools
-- **EasyOCR Team** - For OCR capabilities
-
-## 📞 **Support**
-
-- 📧 **Email**: support@vexo.ai
-- 📚 **Documentation**: [docs.vexo.ai](https://docs.vexo.ai)
-- 🐛 **Issues**: [GitHub Issues](https://github.com/yourusername/vexo/issues)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/yourusername/vexo/discussions)
+**Note**: LICENSE file is pending creation.
 
 ---
 
