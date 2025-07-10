@@ -536,6 +536,24 @@ async def validate_google_drive_multiple_images_with_progress(
         )
 
 
+@app.get("/model_info")
+async def get_model_info():
+    """Get information about the current model being used."""
+    from config import MODEL_PATH
+
+    model_name = os.path.basename(MODEL_PATH)
+    model_path = MODEL_PATH
+    models_loaded = model_manager.are_models_loaded()
+
+    return {
+        "model_name": model_name,
+        "model_path": model_path,
+        "models_loaded": models_loaded,
+        "model_type": "Keras CNN Model",
+        "description": "AI model for detecting artificially generated images",
+    }
+
+
 if __name__ == "__main__":
     logger.info("Starting VEXO Image Validation API server...")
     uvicorn.run(app, host=HOST, port=PORT)

@@ -4,6 +4,10 @@ Configuration settings for the VEXO Image Validation API.
 
 import os
 from typing import List
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 
 # Load environment variables

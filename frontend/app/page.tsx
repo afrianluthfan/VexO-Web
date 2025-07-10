@@ -5,6 +5,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Trash2 } from "lucide-react";
 import { AppHeader } from "@/components/common/AppHeader";
+import { ModelInfo } from "@/components/common/ModelInfo";
 import { GoogleDriveSetupInfo } from "@/components/common/GoogleDriveSetupInfo";
 import { ValidationCarousel } from "@/components/validation/ValidationCarousel";
 import { AllValidationResults } from "@/components/validation/AllValidationResults";
@@ -188,6 +189,11 @@ export default function Home() {
             </Button>
           </div>
         )}
+
+        {/* Model Information */}
+        <div className="mb-6">
+          <ModelInfo isDarkMode={isDarkMode} />
+        </div>
 
         {/* Loading Progress Indicators */}
         {imageLoading && (

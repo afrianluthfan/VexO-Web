@@ -22,4 +22,5 @@ dependencies = [
     "pytesseract==0.3.10",
     "easyocr==1.7.1",
     "websockets>=15.0.1",
+    "python-dotenv>=1.0.0",
 ]

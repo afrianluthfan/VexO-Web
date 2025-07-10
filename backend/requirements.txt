@@ -3,6 +3,7 @@ fastapi>=0.115.12
 uvicorn>=0.34.3
 python-multipart>=0.0.20
 websockets>=10.4
+python-dotenv>=1.0.0
 
 # Machine Learning dependencies
 tensorflow>=2.19.0
