@@ -3,9 +3,10 @@ import { CheckCircle2 } from "lucide-react";
 
 export const showGoogleDriveSetupToast = () => {
   toast.info("Google Drive Setup Information", {
-    description: "Google Drive integration requires API authentication. Make sure your backend is configured with Google Drive credentials.",
+    description:
+      "Google Drive integration requires API authentication. Make sure your backend is configured with Google Drive credentials.",
     icon: <CheckCircle2 className="h-4 w-4" />,
-    duration: 8000, // 8 seconds
+    duration: 3000, // 3 seconds
     action: {
       label: "Learn More",
       onClick: () => {
@@ -40,7 +41,7 @@ export const showGoogleDriveSetupToastDetailed = () => {
       </div>
     ),
     {
-      duration: 10000, // 10 seconds
+      duration: 3000, // 3 seconds
     }
   );
 };
@@ -48,7 +49,8 @@ export const showGoogleDriveSetupToastDetailed = () => {
 // Alternative: Persistent toast that requires manual dismissal
 export const showGoogleDriveSetupToastPersistent = () => {
   toast.info("Google Drive Setup Required", {
-    description: "Configure your backend with Google Drive API credentials to enable file validation.",
+    description:
+      "Configure your backend with Google Drive API credentials to enable file validation.",
     icon: <CheckCircle2 className="h-4 w-4" />,
     duration: Infinity, // Stays until manually dismissed
     action: {
