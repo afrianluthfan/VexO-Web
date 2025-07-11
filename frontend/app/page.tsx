@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Trash2 } from "lucide-react";
 import { AppHeader } from "@/components/common/AppHeader";
 import { ModelInfo } from "@/components/common/ModelInfo";
-import { GoogleDriveSetupInfo } from "@/components/common/GoogleDriveSetupInfo";
+import { showGoogleDriveSetupToastDetailed } from "@/components/common/GoogleDriveSetupToast";
 import { ValidationCarousel } from "@/components/validation/ValidationCarousel";
 import { AllValidationResults } from "@/components/validation/AllValidationResults";
 import { LoadingProgress } from "@/components/common/LoadingProgress";
@@ -58,6 +58,16 @@ export default function Home() {
     excelDriveUrls,
     error: excelError,
   } = useExcelValidation();
+
+  // Show Google Drive setup toast on component mount
+  useEffect(() => {
+    // Show the toast after a short delay to ensure the page has loaded
+    const timer = setTimeout(() => {
+      showGoogleDriveSetupToastDetailed();
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   // Combine all errors
   const allErrors = [apiError, excelError].filter(Boolean);
@@ -158,8 +168,8 @@ export default function Home() {
         {/* Header */}
         <AppHeader isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} />
 
-        {/* Google Drive Setup Instructions */}
-        <GoogleDriveSetupInfo />
+        {/* Google Drive Setup Instructions now shown as toast */}
+        {/* <GoogleDriveSetupInfo /> */}
 
         {/* Validation Carousel */}
         <ValidationCarousel
